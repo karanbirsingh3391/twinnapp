@@ -57,13 +57,19 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     private var searchBar = UISearchBar()
     private var myCollectionView:UICollectionView!
     //private var myCollectionViewArray = [String]()
-    var myCollectionViewArray: [[String: Any]] = []
+    private var myCollectionViewArray: [[String: Any]] = []
+    private var myCollectionViewType:Bool!
     //private var loginView = UIView()
+    
+    func isKeyPresentInUserDefaults(key: String) -> Bool {
+        return UserDefaults.standard.object(forKey: key) != nil
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         //self.view.translatesAutoresizingMaskIntoConstraints = false
         self.view.isUserInteractionEnabled = true
+        myCollectionViewType = false
         
         self.updateDatabases()
         if databases.isEmpty {
@@ -72,8 +78,17 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         setupBaseElements()
         //setupProjectListView()
         setupScanListView()
-        //setupLoginView()
         
+        
+        if (isKeyPresentInUserDefaults(key: "access_token"))
+        {
+            //do nothing
+            setupLoginView()
+        }
+        else
+        {
+            setupLoginView()
+        }
         //UserDefaults.standard.setValue(dataModel, forKey: "access_token")
         
     }
@@ -206,19 +221,22 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     
     func setupProjectListView()
     {
-        let projectListCollectionView = ProjectsListCollectionView(frame: CGRect(x: 122, y: 148, width: UIScreen.main.bounds.width-132, height: UIScreen.main.bounds.height-200), collectionViewLayout: UICollectionViewFlowLayout.init())
-        let layout:UICollectionViewFlowLayout = UICollectionViewFlowLayout.init()
-        layout.scrollDirection = UICollectionView.ScrollDirection.vertical
-        //layout.sectionInset = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
-        layout.itemSize = CGSize(width: 200, height: 280)
-        layout.minimumLineSpacing = 50
-        layout.minimumInteritemSpacing = 10
-        projectListCollectionView.setCollectionViewLayout(layout, animated: true)
-        projectListCollectionView.delegate = self
-        projectListCollectionView.dataSource = self
-        projectListCollectionView.backgroundColor = UIColor.clear
-        projectListCollectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: reuseIdentifier)
-        self.view.addSubview(projectListCollectionView)
+//        let projectListCollectionView = ProjectsListCollectionView(frame: CGRect(x: 122, y: 148, width: UIScreen.main.bounds.width-132, height: UIScreen.main.bounds.height-200), collectionViewLayout: UICollectionViewFlowLayout.init())
+//        let layout:UICollectionViewFlowLayout = UICollectionViewFlowLayout.init()
+//        layout.scrollDirection = UICollectionView.ScrollDirection.vertical
+//        //layout.sectionInset = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
+//        layout.itemSize = CGSize(width: 200, height: 280)
+//        layout.minimumLineSpacing = 50
+//        layout.minimumInteritemSpacing = 10
+//        projectListCollectionView.setCollectionViewLayout(layout, animated: true)
+//        projectListCollectionView.delegate = self
+//        projectListCollectionView.dataSource = self
+//        projectListCollectionView.backgroundColor = UIColor.clear
+//        projectListCollectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: reuseIdentifier)
+//        self.view.addSubview(projectListCollectionView)
+        
+        //myCollectionViewArray.removeAll()
+        
     }
     
     func setupScanListView()
@@ -281,15 +299,24 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
             print(databases)
             //file:///private/var/mobile/Containers/Data/Application/FBBEA336-4AC8-431D-A440-28E4231FAA75/Documents/Door.db
             
-            for i in 0...databases.count-1 {
-                myCollectionViewArray.insert(["name": URL(fileURLWithPath: databases[i].path).lastPathComponent.components(separatedBy: ".")[0], "clientName":"", "dateCreated":(try! URL(fileURLWithPath: databases[i].path).resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate!.getFormattedDate(format: "dd/MM/yyyy")), "status": "In Progress", "image": databases[i].path], at: i)
+            if(myCollectionViewType)
+            {
+                for i in 0...databases.count-1 {
+                    myCollectionViewArray.insert(["name": URL(fileURLWithPath: databases[i].path).lastPathComponent.components(separatedBy: ".")[0], "clientName":"", "dateCreated":(try! URL(fileURLWithPath: databases[i].path).resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate!.getFormattedDate(format: "dd/MM/yyyy")), "status": "In Progress", "image": databases[i].path], at: i)
+                }
+            }
+            else
+            {
+                myCollectionViewArray.insert(["name": "Google", "clientName":"", "dateCreated":"22/11/2022", "status": "In Progress", "image": "ProjectSmapleImage.png"], at: 0)
+                myCollectionViewArray.insert(["name": "Facebook", "clientName":"", "dateCreated":"22/11/2022", "status": "In Progress", "image": "ProjectSmapleImage.png"], at: 1)
+                myCollectionViewArray.insert(["name": "Microsoft", "clientName":"", "dateCreated":"22/11/2022", "status": "In Progress", "image": "ProjectSmapleImage.png"], at: 2)
             }
         } catch {
             print("Error while enumerating files : \(error.localizedDescription)")
             return
         }
         
-        
+        print(myCollectionViewArray)
     }
     
     func getDocumentDirectory() -> URL {
@@ -412,7 +439,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     
     // tell the collection view how many cells to make
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return databases.count
+        return self.myCollectionViewArray.count
     }
     
     // make a cell for each cell index path
@@ -460,12 +487,6 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
 //        imageView.layer.shadowOpacity = 1
 //        imageView.layer.shadowOffset = .zero
 //        imageView.layer.shadowRadius = 5
-        DispatchQueue.global().async {
-            let downloadedImage = getPreviewImage(databasePath: self.myCollectionViewArray[indexPath.row]["image"] as! String)
-          DispatchQueue.main.async {
-              imageView.image = downloadedImage
-          }
-        }
         cell.addSubview(imageView)
         
         let cellProgressView = UIProgressView(frame: CGRect(x: 0, y: 210, width: cell.frame.width, height: 20))
@@ -475,7 +496,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         cellProgressView.tintColor = UIColor(red: 0.235, green: 0.475, blue: 0.871, alpha: 1)
         let transform : CGAffineTransform = CGAffineTransformMakeScale(1.0, 3.0)
         cellProgressView.transform = transform
-        cell.addSubview(cellProgressView)
+        
         
         let dateScanTitle = UILabel(frame: CGRect(x: 12, y: 241, width: 70, height: 12))
         //projectTitle.center = CGPoint(x: 160, y: 285)
@@ -485,7 +506,6 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         dateScanTitle.font = UIFont.preferredFont(forTextStyle: .body)
         dateScanTitle.font.withSize(8)
         dateScanTitle.textColor = .systemGray
-        dateScanTitle.text = "Date Scanned"
         dateScanTitle.numberOfLines = 1
         dateScanTitle.adjustsFontSizeToFitWidth = true
         cell.addSubview(dateScanTitle)
@@ -518,7 +538,27 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         statusTitle.text = self.myCollectionViewArray[indexPath.row]["status"] as? String
         statusTitle.numberOfLines = 1
         statusTitle.adjustsFontSizeToFitWidth = true
-        cell.addSubview(statusTitle)
+        
+        
+        
+        if(self.myCollectionViewType)
+        {
+            DispatchQueue.global().async {
+                let downloadedImage = getPreviewImage(databasePath: self.myCollectionViewArray[indexPath.row]["image"] as! String)
+                DispatchQueue.main.async {
+                    imageView.image = downloadedImage
+                }
+            }
+            cell.addSubview(cellProgressView)
+            dateScanTitle.text = "Date Scanned"
+            cell.addSubview(statusTitle)
+        }
+        else
+        {
+            imageView.image = UIImage(named: self.myCollectionViewArray[indexPath.row]["image"] as! String)!
+            dateScanTitle.text = "Date Created"
+        }
+        
         
         cell.addInteraction(interaction)
         cell.tag = indexPath.row
@@ -537,8 +577,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     
     
     func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
-        print(location)
-        print(interaction.view?.tag)
+        //print(interaction.view?.tag)
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
                     let shareAction = UIAction(title: "Share", image: UIImage(systemName: "square.and.arrow.up")) { _ in
                         print(self.databases[interaction.view!.tag])
@@ -595,3 +634,5 @@ extension LandingController: LoginViewDelegate {
         print(password)
     }
 }
+
+
