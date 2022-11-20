@@ -131,7 +131,11 @@ class LoginView: UIView, UITextFieldDelegate {
         print("button Pressed")
 //        self.delegate?.sendLoginRequest(email: self.emailTextField.text ?? "a", password: self.passwordTextField.text ?? "b")
 
-        loginUser()
+        
+        if((emailTextField.text?.isEmpty) != nil)
+        {
+            loginUser()
+        }
     }
     
     func navigateToProjects()
@@ -167,6 +171,7 @@ class LoginView: UIView, UITextFieldDelegate {
     }
     
     func loginUser(){
+        
         let url = URL(string: "https://dev-crm-api.tooliqa.com/api/auth/api/v1/auth/login")!
         var request = URLRequest(url: url)
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
@@ -196,6 +201,9 @@ class LoginView: UIView, UITextFieldDelegate {
             guard (200 ... 299) ~= response.statusCode else {                    // check for http errors
                 print("statusCode should be 2xx, but is \(response.statusCode)")
                 print("response = \(response)")
+                DispatchQueue.main.async {
+                    self.showToast(message: "Something went wrong.", font: UIFont.preferredFont(forTextStyle: .body))
+                }
                 return
             }
             
@@ -204,7 +212,7 @@ class LoginView: UIView, UITextFieldDelegate {
             
             do {
                 let responseObject = try JSONDecoder().decode(ResponseObject<Foo>.self, from: data)
-                print(responseObject)
+                //print(responseObject)
             } catch {
                 print(error) // parsing error
                 
@@ -215,7 +223,7 @@ class LoginView: UIView, UITextFieldDelegate {
                     UserDefaults.standard.setValue(dict?["access_token"] as! String, forKey: "access_token")
                     DispatchQueue.main.async {
                         self.navigateToProjects()
-                        }
+                    }
                     
                     
                 } else {
@@ -236,6 +244,25 @@ class LoginView: UIView, UITextFieldDelegate {
             }
         }
         return nil
+    }
+    
+    func showToast(message : String, font: UIFont) {
+
+        let toastLabel = UILabel(frame: CGRect(x: self.frame.size.width/2 - 150, y: self.frame.size.height-100, width: 300, height: 35))
+        toastLabel.backgroundColor = UIColor.black.withAlphaComponent(0.6)
+        toastLabel.textColor = UIColor.white
+        toastLabel.font = font
+        toastLabel.textAlignment = .center
+        toastLabel.text = message
+        toastLabel.alpha = 1.0
+        toastLabel.layer.cornerRadius = 10;
+        toastLabel.clipsToBounds  =  true
+        self.addSubview(toastLabel)
+        UIView.animate(withDuration: 4.0, delay: 0.1, options: .curveEaseOut, animations: {
+             toastLabel.alpha = 0.0
+        }, completion: {(isCompleted) in
+            toastLabel.removeFromSuperview()
+        })
     }
     
 }

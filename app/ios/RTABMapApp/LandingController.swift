@@ -83,7 +83,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         if (isKeyPresentInUserDefaults(key: "access_token"))
         {
             //do nothing
-            setupLoginView()
+            //setupLoginView()
         }
         else
         {
@@ -634,5 +634,4 @@ extension LandingController: LoginViewDelegate {
         print(password)
     }
 }
-
 

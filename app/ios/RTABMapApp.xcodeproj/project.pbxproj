@@ -167,6 +167,7 @@
 		A9DC971628D9CB5600FD987B /* Twinn LOGO.png in Resources */ = {isa = PBXBuildFile; fileRef = A9DC971528D9CB5600FD987B /* Twinn LOGO.png */; };
 		A9DC971828E4242A00FD987B /* TWINN Logo 1.png in Resources */ = {isa = PBXBuildFile; fileRef = A9DC971728E4242A00FD987B /* TWINN Logo 1.png */; };
 		A9E5B813292A922D00E1989D /* ProjectSmapleImage.png in Resources */ = {isa = PBXBuildFile; fileRef = A9E5B812292A922D00E1989D /* ProjectSmapleImage.png */; };
+		A9E5B815292AB6A400E1989D /* APIHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9E5B814292AB6A400E1989D /* APIHelper.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -368,6 +369,7 @@
 		A9DC971528D9CB5600FD987B /* Twinn LOGO.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Twinn LOGO.png"; sourceTree = "<group>"; };
 		A9DC971728E4242A00FD987B /* TWINN Logo 1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "TWINN Logo 1.png"; sourceTree = "<group>"; };
 		A9E5B812292A922D00E1989D /* ProjectSmapleImage.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ProjectSmapleImage.png; sourceTree = "<group>"; };
+		A9E5B814292AB6A400E1989D /* APIHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIHelper.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -531,6 +533,7 @@
 				4EB1A66525A0D90B0043C7BF /* RTABMap.swift */,
 				4E2C516525A63119005CEDBD /* DatabaseView.swift */,
 				4E2C516625A63119005CEDBD /* VerticalScrollerView.swift */,
+				A9E5B814292AB6A400E1989D /* APIHelper.swift */,
 				A949C7322922888900836DEE /* LoginView.swift */,
 				A949C7382923DFCC00836DEE /* ProjectsListCollectionView.swift */,
 				A9DC971128D8EF4D00FD987B /* LandingController.swift */,
@@ -885,6 +888,7 @@
 				4EFD0F67259E38DE00575D88 /* NativeWrapper.cpp in Sources */,
 				4EFD0BAD259D501E00575D88 /* goal_marker.cpp in Sources */,
 				4EFD0B9B259D501E00575D88 /* mesh.cpp in Sources */,
+				A9E5B815292AB6A400E1989D /* APIHelper.swift in Sources */,
 				4EFD0BA9259D501E00575D88 /* grid.cpp in Sources */,
 				4EFD0BB8259D508C00575D88 /* graph_drawable.cpp in Sources */,
 				4EFD0BAC259D501E00575D88 /* cube.cpp in Sources */,
