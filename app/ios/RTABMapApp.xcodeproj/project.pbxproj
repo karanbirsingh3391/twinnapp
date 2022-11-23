@@ -169,6 +169,7 @@
 		A9E5B813292A922D00E1989D /* ProjectSmapleImage.png in Resources */ = {isa = PBXBuildFile; fileRef = A9E5B812292A922D00E1989D /* ProjectSmapleImage.png */; };
 		A9E5B815292AB6A400E1989D /* APIHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9E5B814292AB6A400E1989D /* APIHelper.swift */; };
 		A9E5B817292E816400E1989D /* BackButton.png in Resources */ = {isa = PBXBuildFile; fileRef = A9E5B816292E816400E1989D /* BackButton.png */; };
+		A9E5B819292EA7EC00E1989D /* CreateNewProjectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9E5B818292EA7EC00E1989D /* CreateNewProjectView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -372,6 +373,7 @@
 		A9E5B812292A922D00E1989D /* ProjectSmapleImage.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ProjectSmapleImage.png; sourceTree = "<group>"; };
 		A9E5B814292AB6A400E1989D /* APIHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIHelper.swift; sourceTree = "<group>"; };
 		A9E5B816292E816400E1989D /* BackButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = BackButton.png; sourceTree = "<group>"; };
+		A9E5B818292EA7EC00E1989D /* CreateNewProjectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateNewProjectView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -538,6 +540,7 @@
 				4E2C516625A63119005CEDBD /* VerticalScrollerView.swift */,
 				A9E5B814292AB6A400E1989D /* APIHelper.swift */,
 				A949C7322922888900836DEE /* LoginView.swift */,
+				A9E5B818292EA7EC00E1989D /* CreateNewProjectView.swift */,
 				A949C7382923DFCC00836DEE /* ProjectsListCollectionView.swift */,
 				A9DC971128D8EF4D00FD987B /* LandingController.swift */,
 			);
@@ -870,6 +873,7 @@
 				4EE016B3259BE441008CCE65 /* ViewController.swift in Sources */,
 				4E2C516725A63119005CEDBD /* DatabaseView.swift in Sources */,
 				4EFD0BAA259D501E00575D88 /* triangle.cpp in Sources */,
+				A9E5B819292EA7EC00E1989D /* CreateNewProjectView.swift in Sources */,
 				4EFD0B9D259D501E00575D88 /* segment_drawable.cpp in Sources */,
 				4EE016B4259BE441008CCE65 /* SceneDelegate.swift in Sources */,
 				4EFD0BA2259D501E00575D88 /* texture.cpp in Sources */,

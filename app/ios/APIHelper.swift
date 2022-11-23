@@ -134,7 +134,7 @@ final public class APIHelper: NSObject {
                 print("response object ")
                 print(array)
                 if let responseString = String(data: data, encoding: .utf8) {
-                    print("responseString = \(responseString)")
+                    //print("responseString = \(responseString)")
                     completion(responseString, nil)
                 } else {
                     print("unable to parse response as string")

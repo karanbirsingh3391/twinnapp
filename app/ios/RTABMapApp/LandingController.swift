@@ -61,6 +61,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     private var myCollectionViewArray: [[String: Any]] = []
     private var myCollectionViewType:Bool!
     public var spinnerView: UIActivityIndicatorView!
+    public var createNewProjectView: CreateNewProjectView!
     //private var loginView = UIView()
     
     func isKeyPresentInUserDefaults(key: String) -> Bool {
@@ -114,6 +115,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                                         myArray.append(name)
                                         //self.myCollectionViewArray.insert(["name": "Google", "clientName":"", "dateCreated":"22/11/2022", "status": "In Progress", "image": "ProjectSmapleImage.png"], at: 0)
                                         self.myCollectionViewArray.append(["name": project["projectName"] as? String, "clientName":project["clientName"] as? String, "dateCreated":project["startDate"] as? String, "status": "In Progress", "image": "ProjectSmapleImage.png"])
+                                        UserDefaults.standard.setValue(project["clientId"] as! String, forKey: "clientId")
                                     }
                                 }
                         }
@@ -122,6 +124,63 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                         self.setupScanListView()
                         
                     }
+                }
+            }
+        }
+        else
+        {
+            setupLoginView()
+        }
+        //UserDefaults.standard.setValue(dataModel, forKey: "access_token")
+        
+    }
+    
+    func createNewProject(name:String, clientID: String){
+        myCollectionViewType = false
+        if (isKeyPresentInUserDefaults(key: "access_token"))
+        {
+            myCollectionViewArray.removeAll()
+            UIView.animate(withDuration: 0.3, delay: 0.0, options: [], animations: {
+                self.createNewProjectView.frame = CGRect(x: self.screenWidth, y: 0, width: 400, height: self.screenHeight)
+            }, completion: { (finished: Bool) in
+                self.createNewProjectView.removeFromSuperview()
+            })
+            spinnerView = UIActivityIndicatorView(style: .medium)
+            spinnerView.color = .white
+            spinnerView.center = newScanButton.center
+            self.view.addSubview(spinnerView)
+            spinnerView.startAnimating()
+            newScanButton.setTitle("", for: .normal)
+            print(clientID)
+            print(name)
+            let parameters: [String: Any] = [
+                "clientId": clientID,
+                "projectName": name,
+                "startDate": "2022-12-10"
+            ]
+            APIHelper.shareInstance.apiCall(endpoint: "", parameters: parameters, method: "POST") { responseString, error in
+                //print(responseString)
+                
+                DispatchQueue.main.async {
+                    if(responseString == ""){
+                        self.showToast(message: "Something went wrong.", font: UIFont.preferredFont(forTextStyle: .body))
+                    }
+                    else
+                    {
+                    }
+                    self.spinnerView.stopAnimating()
+                    self.spinnerView.removeFromSuperview()
+                    //self.setupScanListView()
+                    self.myCollectionViewType = false
+                    
+                    UIView.animate(withDuration: 1.0, delay: 0.0, options: [], animations: {
+                        self.myCollectionViewArray.removeAll()
+                        self.myCollectionView.removeFromSuperview()
+                    }, completion: { (finished: Bool) in
+                        self.fetchProjectsData()
+                        self.newScanButton.setTitle("Create Project", for: .normal)
+                        self.projectTitle.text = "Organization Name | Projects"
+                    })
                 }
             }
         }
@@ -185,6 +244,11 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         loginView.backgroundColor = .white
         loginView.delegate = self
         self.view.addSubview(loginView)
+    }
+    
+    func openCreateNewProjectView()
+    {
+        
     }
     
     func setupBaseElements()
@@ -293,6 +357,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         l.cornerRadius = 10
         newScanButton.layer.addSublayer(l)
         self.view.addSubview(newScanButton)
+    
     }
     
     func setupProjectListView()
@@ -703,6 +768,18 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         }
         else
         {
+            createNewProjectView = CreateNewProjectView(frame: CGRect(x: screenWidth, y: 0, width: 400, height: screenHeight), screenWidth: screenWidth, screenHeight: screenHeight)
+            createNewProjectView.backgroundColor = .systemGray6
+            createNewProjectView.delegate = self
+            self.view.addSubview(createNewProjectView)
+            //self.view.bringSubviewToFront(newScanButton)
+            //
+            UIView.animate(withDuration: 0.3, delay: 0.0, options: [], animations: {
+                self.createNewProjectView.frame = CGRect(x: self.screenWidth-400, y: 0, width: 400, height: self.screenHeight)
+
+            }, completion: { (finished: Bool) in
+
+            })
             
         }
 
@@ -730,7 +807,6 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         self.newScanButton.setTitle("Create Project", for: .normal)
         self.projectTitle.text = "Organization Name | Projects"
         setupLoginView()
-        
         
     }
     
@@ -778,6 +854,13 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
 extension LandingController: LoginViewDelegate {
     func sendSetupRequest(email: String, password: String) {
         fetchProjectsData()
+    }
+}
+
+// MARK: - CreateNewProjectViewExtension
+extension LandingController: CreateNewProjectViewDelegate {
+    func sendRequest(requestString: String) {
+        self.createNewProject(name: requestString, clientID: UserDefaults.standard.object(forKey: "clientId")! as! String)
     }
 }
 

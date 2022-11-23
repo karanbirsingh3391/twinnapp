@@ -130,9 +130,6 @@ class LoginView: UIView, UITextFieldDelegate {
         self.addSubview(spinnerView)
         spinnerView.startAnimating()
         
-        
-
-        
         if((emailTextField.text?.isEmpty) != nil)
         {
             //loginUser()
