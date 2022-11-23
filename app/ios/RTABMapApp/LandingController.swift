@@ -53,12 +53,14 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     private let menuViewProjectsButton = UIButton()
     private let newScanButton = UIButton()
     private let profileButton = UIButton()
+    private let backButton = UIButton()
     private let helpButton = UIButton()
     private var searchBar = UISearchBar()
     private var myCollectionView:UICollectionView!
     //private var myCollectionViewArray = [String]()
     private var myCollectionViewArray: [[String: Any]] = []
     private var myCollectionViewType:Bool!
+    public var spinnerView: UIActivityIndicatorView!
     //private var loginView = UIView()
     
     func isKeyPresentInUserDefaults(key: String) -> Bool {
@@ -71,22 +73,30 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         self.view.isUserInteractionEnabled = true
         myCollectionViewType = false
         
-        self.updateDatabases()
-        if databases.isEmpty {
-            return
-        }
+//        self.updateDatabases()
+//        if databases.isEmpty {
+//            return
+//        }
         setupBaseElements()
         //setupProjectListView()
-        setupScanListView()
+        fetchProjectsData()
         
-        
+    }
+    
+    func fetchProjectsData(){
+        myCollectionViewType = false
         if (isKeyPresentInUserDefaults(key: "access_token"))
         {
-            //do nothing
-            //setupLoginView()
+            myCollectionViewArray.removeAll()
+            spinnerView = UIActivityIndicatorView(style: .large)
+            spinnerView.color = .darkGray
+            spinnerView.center = self.view.center
+            self.view.addSubview(spinnerView)
+            spinnerView.startAnimating()
+            
             let parameters: [String: Any] = [:]
             APIHelper.shareInstance.apiCall(endpoint: "", parameters: parameters, method: "GET") { responseString, error in
-                print(responseString)
+                //print(responseString)
                 
                 DispatchQueue.main.async {
                     if(responseString == ""){
@@ -94,10 +104,23 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                     }
                     else{
                         let dict = self.convertToDictionary(text: responseString)
-                        print(dict?["access_token"] as! String)
-                        UserDefaults.standard.setValue(dict?["access_token"] as! String, forKey: "access_token")
                         
-
+                        var myArray = [String]()
+                
+                        if let projects = dict?["projects"] as? [[String: AnyObject]] {
+                            //for i in 0...projects.count-1 {}
+                                for project in projects {
+                                    if let name = project["projectName"] as? String {
+                                        myArray.append(name)
+                                        //self.myCollectionViewArray.insert(["name": "Google", "clientName":"", "dateCreated":"22/11/2022", "status": "In Progress", "image": "ProjectSmapleImage.png"], at: 0)
+                                        self.myCollectionViewArray.append(["name": project["projectName"] as? String, "clientName":project["clientName"] as? String, "dateCreated":project["startDate"] as? String, "status": "In Progress", "image": "ProjectSmapleImage.png"])
+                                    }
+                                }
+                        }
+                        self.spinnerView.stopAnimating()
+                        self.spinnerView.removeFromSuperview()
+                        self.setupScanListView()
+                        
                     }
                 }
             }
@@ -129,10 +152,25 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         
 //        let timer = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(self.update), userInfo: nil, repeats: false)
 //        self.updateDatabases()
+        if(myCollectionViewType)
+        {
+            self.updateDatabases()
+            self.myCollectionView.removeFromSuperview()
+            UIView.animate(withDuration: 1.0, delay: 1.0, options: [], animations: {
+                self.setupScanListView()
+            }, completion: { (finished: Bool) in
+                
+            })
+        }
+        else
+        {
+            
+        }
+        
     }
     
     override func viewWillDisappear(_ animated: Bool) {
-        self.myCollectionView.removeFromSuperview()
+        //self.myCollectionView.removeFromSuperview()
         
     }
     
@@ -151,7 +189,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     
     func setupBaseElements()
     {
-        projectTitle = UILabel(frame: CGRect(x: 122, y: 50, width: 400, height: 21))
+        projectTitle = UILabel(frame: CGRect(x: 140, y: 50, width: 400, height: 21))
         //projectTitle.center = CGPoint(x: 160, y: 285)
         //projectTitle.font = UIFont(name: projectTitle.font.fontName, size: 20)
         projectTitle.textAlignment = .left
@@ -161,7 +199,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         projectTitle.font = UIFont(name: "Inter-Medium", size: 20)
         //var paragraphStyle = NSMutableParagraphStyle()
         //paragraphStyle.lineHeightMultiple = 0.83
-        projectTitle.text = "Organization Name | Projects | Project Name"
+        projectTitle.text = "Organization Name | Projects"
         self.view.addSubview(projectTitle)
         
         searchBar.frame = CGRect(x:screenWidth-320, y:36 , width:300, height: 44)
@@ -201,7 +239,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
 //        menuViewProjectsButton.setImage(UIImage(named: "ProjectsButtonImage1"), for: .highlighted)
 //        menuViewProjectsButton.contentVerticalAlignment = .center
 //        menuViewProjectsButton.alignImageAndTitleVertically()
-        menuViewProjectsButton.addTarget(self, action: #selector(buttonAction), for: .touchUpInside)
+        menuViewProjectsButton.addTarget(self, action: #selector(backButtonAction), for: .touchUpInside)
         menuView.addSubview(menuViewProjectsButton)
         
         let buttonImageView = UIImageView(image: UIImage(named: "ProjectsButtonImage.png")!)
@@ -225,15 +263,36 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         //profileButton.backgroundColor = .systemGreen
         profileButton.setImage(UIImage(named: "ProfilePlaceholder"), for: .normal)
         profileButton.setImage(UIImage(named: "ProfilePlaceholder"), for: .highlighted)
-        profileButton.addTarget(self, action: #selector(buttonAction), for: .touchUpInside)
+        profileButton.addTarget(self, action: #selector(backButtonAction), for: .touchUpInside)
         menuView.addSubview(profileButton)
         
         helpButton.frame = CGRect(x: 27, y: screenHeight-60, width: 25, height: 25)
         //profileButton.backgroundColor = .systemGreen
         helpButton.setImage(UIImage(named: "HelpIcon"), for: .normal)
         helpButton.setImage(UIImage(named: "HelpIcon"), for: .highlighted)
-        helpButton.addTarget(self, action: #selector(buttonAction), for: .touchUpInside)
+        helpButton.addTarget(self, action: #selector(logoutButtonAction), for: .touchUpInside)
         menuView.addSubview(helpButton)
+        
+        backButton.frame = CGRect(x: 100, y: 50, width: 20, height: 20)
+        //profileButton.backgroundColor = .systemGreen
+        backButton.setImage(UIImage(named: "BackButton"), for: .normal)
+        backButton.setImage(UIImage(named: "BackButton"), for: .highlighted)
+        backButton.addTarget(self, action: #selector(backButtonAction), for: .touchUpInside)
+        self.view.addSubview(backButton)
+        
+        newScanButton.frame = CGRect(x: screenWidth-156, y: screenHeight-62, width: 146, height: 52)
+        newScanButton.backgroundColor = .clear
+        newScanButton.setTitle("Create Project", for: .normal)
+        //newScanButton.titleLabel?.font = UIFont(name: "Sora-SemiBold", size: 16)
+        newScanButton.addTarget(self, action: #selector(newScanButtonAction), for: .touchUpInside)
+        let l = CAGradientLayer()
+        l.frame = newScanButton.bounds
+        l.colors = [UIColor(red: 62.0/255.0, green: 121/255.0, blue: 229.0/255.0, alpha: 1.0).cgColor, UIColor(red: 1.0/255.0, green: 184.0/255.0, blue: 227.0/255.0, alpha: 1.0).cgColor]
+        l.startPoint = CGPoint(x: 0, y: 0.5)
+        l.endPoint = CGPoint(x: 1, y: 0.5)
+        l.cornerRadius = 10
+        newScanButton.layer.addSublayer(l)
+        self.view.addSubview(newScanButton)
     }
     
     func setupProjectListView()
@@ -259,7 +318,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     func setupScanListView()
     {
         let layout:UICollectionViewFlowLayout = UICollectionViewFlowLayout.init()
-        myCollectionView = ProjectsListCollectionView(frame: CGRect(x: 122, y: 148, width: UIScreen.main.bounds.width-132, height: UIScreen.main.bounds.height-200), collectionViewLayout: layout)
+        myCollectionView = ProjectsListCollectionView(frame: CGRect(x: 122, y: 148, width: UIScreen.main.bounds.width-132, height: UIScreen.main.bounds.height-20), collectionViewLayout: layout)
 //        myCollectionView = ProjectsListCollectionView(frame: CGRect(x: 122, y: 148, width: UIScreen.main.bounds.width-132, height: UIScreen.main.bounds.height-200))
 //        myCollectionView.setCollectionViewLayout(layout, animated: true)
         layout.scrollDirection = UICollectionView.ScrollDirection.vertical
@@ -274,30 +333,10 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         myCollectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: reuseIdentifier)
         //myCollectionView.register(ScanCell.self, forCellWithReuseIdentifier: reuseIdentifier)
         self.view.addSubview(myCollectionView)
+        self.view.bringSubviewToFront(newScanButton)
         
-        newScanButton.frame = CGRect(x: screenWidth-156, y: screenHeight-62, width: 146, height: 52)
-        newScanButton.backgroundColor = .clear
-        newScanButton.setTitle("New Scan", for: .normal)
-        //newScanButton.titleLabel?.font = UIFont(name: "Sora-SemiBold", size: 16)
-        newScanButton.addTarget(self, action: #selector(buttonAction), for: .touchUpInside)
-        let l = CAGradientLayer()
-        l.frame = newScanButton.bounds
-        l.colors = [UIColor(red: 62.0/255.0, green: 121/255.0, blue: 229.0/255.0, alpha: 1.0).cgColor, UIColor(red: 1.0/255.0, green: 184.0/255.0, blue: 227.0/255.0, alpha: 1.0).cgColor]
-        l.startPoint = CGPoint(x: 0, y: 0.5)
-        l.endPoint = CGPoint(x: 1, y: 0.5)
-        l.cornerRadius = 10
-        newScanButton.layer.addSublayer(l)
-        self.view.addSubview(newScanButton)
     }
     
-    @objc func buttonAction(sender: UIButton!){
-        print("button Pressed")
-        let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
-        let nextViewController = storyBoard.instantiateViewController(withIdentifier: "GLKitViewController") as! ViewController
-        //self.present(nextViewController, animated:true, completion:nil)
-        //nextViewController.passedIndex = currentDatabaseIndex
-        self.show(nextViewController, sender: currentDatabaseIndex)
-    }
     
     func updateDatabases()
     {
@@ -333,7 +372,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
             return
         }
         
-        print(myCollectionViewArray)
+        //print(myCollectionViewArray)
     }
     
     func getDocumentDirectory() -> URL {
@@ -514,7 +553,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         cellOptionsButton.addInteraction(interaction)
         cell.addSubview(cellOptionsButton)
         
-        let scanTitle = UILabel(frame: CGRect(x: 12, y: 16, width: 104, height: 15))
+        let scanTitle = UILabel(frame: CGRect(x: 12, y: 16, width: 170, height: 15))
         //projectTitle.center = CGPoint(x: 160, y: 285)
         //projectTitle.font = UIFont(name: projectTitle.font.fontName, size: 20)
         scanTitle.backgroundColor = .clear
@@ -606,7 +645,6 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
             dateScanTitle.text = "Date Created"
         }
         
-        
         cell.addInteraction(interaction)
         cell.tag = indexPath.row
         
@@ -622,7 +660,81 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     }
     
     
+    // MARK: - UICollectionViewDelegate protocol
     
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        // handle tap events
+        print("You selected cell #\(indexPath.item)!")
+        
+        if(myCollectionViewType)
+        {
+            
+            let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
+            let nextViewController = storyBoard.instantiateViewController(withIdentifier: "GLKitViewController") as! ViewController
+            //self.present(nextViewController, animated:true, completion:nil)
+            nextViewController.passedIndex = indexPath.row
+            self.show(nextViewController, sender: currentDatabaseIndex)
+        }
+        else
+        {
+            myCollectionViewType = true
+            let  projectName = self.myCollectionViewArray[indexPath.row]["name"] as? String
+            projectTitle.text = "Organization Name | Projects | "+projectName!
+            self.newScanButton.setTitle("New Scan", for: .normal)
+            self.updateDatabases()
+            self.myCollectionView.removeFromSuperview()
+            UIView.animate(withDuration: 1.0, delay: 1.0, options: [], animations: {
+                self.setupScanListView()
+            }, completion: { (finished: Bool) in
+            })
+        }
+    }
+    
+    // MARK: - Button Actions
+    @objc func newScanButtonAction(sender: UIButton!){
+        print("button Pressed")
+        if(myCollectionViewType)
+        {
+            let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
+            let nextViewController = storyBoard.instantiateViewController(withIdentifier: "GLKitViewController") as! ViewController
+            //self.present(nextViewController, animated:true, completion:nil)
+            //nextViewController.passedIndex = currentDatabaseIndex
+            self.show(nextViewController, sender: currentDatabaseIndex)
+        }
+        else
+        {
+            
+        }
+
+    }
+    
+    @objc func backButtonAction(sender: UIButton!){
+        myCollectionViewType = false
+        UIView.animate(withDuration: 1.0, delay: 0.0, options: [], animations: {
+            self.myCollectionViewArray.removeAll()
+            self.myCollectionView.removeFromSuperview()
+        }, completion: { (finished: Bool) in
+            self.fetchProjectsData()
+            self.newScanButton.setTitle("Create Project", for: .normal)
+            self.projectTitle.text = "Organization Name | Projects"
+        })
+    }
+    
+    @objc func logoutButtonAction(sender: UIButton!){
+        myCollectionViewType = false
+        UIView.animate(withDuration: 1.0, delay: 0.0, options: [], animations: {
+            self.myCollectionViewArray.removeAll()
+            self.myCollectionView.removeFromSuperview()
+        }, completion: { (finished: Bool) in
+        })
+        self.newScanButton.setTitle("Create Project", for: .normal)
+        self.projectTitle.text = "Organization Name | Projects"
+        setupLoginView()
+        
+        
+    }
+    
+    // MARK: - Context Menu Actions
     func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
         //print(interaction.view?.tag)
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
@@ -659,26 +771,13 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                     return UIMenu(title: "", children: [shareAction, editAction, deleteAction])
              }
     }
-    // MARK: - UICollectionViewDelegate protocol
-    
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        // handle tap events
-        print("You selected cell #\(indexPath.item)!")
-        
-        let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
-        let nextViewController = storyBoard.instantiateViewController(withIdentifier: "GLKitViewController") as! ViewController
-        //self.present(nextViewController, animated:true, completion:nil)
-        nextViewController.passedIndex = indexPath.row
-        self.show(nextViewController, sender: currentDatabaseIndex)
-    }
     
 }
 
 // MARK: - LoginViewExtension
 extension LandingController: LoginViewDelegate {
-    func sendLoginRequest(email: String, password: String) {
-        print(email)
-        print(password)
+    func sendSetupRequest(email: String, password: String) {
+        fetchProjectsData()
     }
 }
 

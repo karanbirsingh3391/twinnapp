@@ -118,17 +118,30 @@ final public class APIHelper: NSObject {
                 return
             }
             
+//            do {
+//                let array = try JSONSerialization.jsonObject(with: data) as? [[String : Any]]
+//                print(array)
+//
+//                } catch {
+//                    print("Exception occured \(error))")
+//                }
+
+
+            
             do {
-                let responseObject = try JSONDecoder().decode(ResponseObject<Foo>.self, from: data)
-                //print(responseObject)
-            } catch {
-                print(error) // parsing error
+                let array = try JSONSerialization.jsonObject(with: data) as? [[String : Any]]
+//                let responseObject = try JSONDecoder().decode(ResponseObject<Foo>.self, from: data)
+                print("response object ")
+                print(array)
                 if let responseString = String(data: data, encoding: .utf8) {
-                    //print("responseString = \(responseString)")
+                    print("responseString = \(responseString)")
                     completion(responseString, nil)
                 } else {
                     print("unable to parse response as string")
                 }
+            } catch {
+                print(error) // parsing error
+
             }
         }
 

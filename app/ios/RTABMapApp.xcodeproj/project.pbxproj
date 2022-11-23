@@ -168,6 +168,7 @@
 		A9DC971828E4242A00FD987B /* TWINN Logo 1.png in Resources */ = {isa = PBXBuildFile; fileRef = A9DC971728E4242A00FD987B /* TWINN Logo 1.png */; };
 		A9E5B813292A922D00E1989D /* ProjectSmapleImage.png in Resources */ = {isa = PBXBuildFile; fileRef = A9E5B812292A922D00E1989D /* ProjectSmapleImage.png */; };
 		A9E5B815292AB6A400E1989D /* APIHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9E5B814292AB6A400E1989D /* APIHelper.swift */; };
+		A9E5B817292E816400E1989D /* BackButton.png in Resources */ = {isa = PBXBuildFile; fileRef = A9E5B816292E816400E1989D /* BackButton.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -370,6 +371,7 @@
 		A9DC971728E4242A00FD987B /* TWINN Logo 1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "TWINN Logo 1.png"; sourceTree = "<group>"; };
 		A9E5B812292A922D00E1989D /* ProjectSmapleImage.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ProjectSmapleImage.png; sourceTree = "<group>"; };
 		A9E5B814292AB6A400E1989D /* APIHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIHelper.swift; sourceTree = "<group>"; };
+		A9E5B816292E816400E1989D /* BackButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = BackButton.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -526,6 +528,7 @@
 				A949C7342922A18600836DEE /* LoginSuccessView.png */,
 				A949C7362922A49000836DEE /* LoginOptionsImage.png */,
 				A9E5B812292A922D00E1989D /* ProjectSmapleImage.png */,
+				A9E5B816292E816400E1989D /* BackButton.png */,
 				4EE016BF259BE464008CCE65 /* Main.storyboard */,
 				4EE016C1259BE464008CCE65 /* LaunchScreen.storyboard */,
 				4EE016BC259BE45C008CCE65 /* Info.plist */,
@@ -813,6 +816,7 @@
 			files = (
 				A949C7372922A49000836DEE /* LoginOptionsImage.png in Resources */,
 				A949C73129212B0A00836DEE /* CellOptionsButton.png in Resources */,
+				A9E5B817292E816400E1989D /* BackButton.png in Resources */,
 				A949C72B2921122C00836DEE /* HelpIcon.png in Resources */,
 				4E0D83832621F52C00C879AC /* Settings.bundle in Resources */,
 				A949C727292110C600836DEE /* ProfilePlaceholder.png in Resources */,

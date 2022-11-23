@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 
 protocol LoginViewDelegate: class {
-    func sendLoginRequest(email: String, password: String)
+    func sendSetupRequest(email: String, password: String)
 }
 
 class LoginView: UIView, UITextFieldDelegate {
@@ -130,7 +130,7 @@ class LoginView: UIView, UITextFieldDelegate {
         self.addSubview(spinnerView)
         spinnerView.startAnimating()
         
-//        self.delegate?.sendLoginRequest(email: self.emailTextField.text ?? "a", password: self.passwordTextField.text ?? "b")
+        
 
         
         if((emailTextField.text?.isEmpty) != nil)
@@ -179,6 +179,7 @@ class LoginView: UIView, UITextFieldDelegate {
                     self.alpha = 0
                 }, completion: { (finished: Bool) in
                     self.removeFromSuperview()
+                    self.delegate?.sendSetupRequest(email: self.emailTextField.text ?? "a", password: self.passwordTextField.text ?? "b")
                 })
             })
         })
