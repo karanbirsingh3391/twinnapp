@@ -13,21 +13,14 @@ protocol LoginViewDelegate: class {
 }
 
 class LoginView: UIView, UITextFieldDelegate {
-    
-    struct ResponseObject<T: Decodable>: Decodable {
-        let form: T    // often the top level key is `data`, but in the case of https://httpbin.org, it echos the submission under the key `form`
-    }
-
-    struct Foo: Decodable {
-        let access_token: String
-        let token_type: String
-    }
-    
+        
     private var loginOptionsView: UIView!
     private var loginSuccessfulView: UIView!
     private var emailTextField: UITextField!
     private var passwordTextField: UITextField!
     public var delegate: LoginViewDelegate!
+    public var spinnerView: UIActivityIndicatorView!
+    public var loginButton: UIButton!
     
     required init?(coder aDecoder: NSCoder) {
       super.init(coder: aDecoder)
@@ -112,7 +105,7 @@ class LoginView: UIView, UITextFieldDelegate {
         emailTextField.text = "karan3391@gmail.com"
         passwordTextField.text = "karan3391"
         
-        let loginButton = UIButton(frame:CGRect(x: screenWidth-468, y: 520, width: 368, height: 40))
+        loginButton = UIButton(frame:CGRect(x: screenWidth-468, y: 520, width: 368, height: 40))
         loginButton.backgroundColor = .clear
         loginButton.setTitle("Log In", for: .normal)
         //newScanButton.titleLabel?.font = UIFont(name: "Sora-SemiBold", size: 16)
@@ -129,12 +122,48 @@ class LoginView: UIView, UITextFieldDelegate {
     
     @objc func loginButtonAction(sender: UIButton!){
         print("button Pressed")
+        loginButton.setTitle("", for: .normal)
+        spinnerView = UIActivityIndicatorView(style: .medium)
+        spinnerView.color = .white
+        spinnerView.center = loginButton.center
+        //spinnerView.backgroundColor = .green
+        self.addSubview(spinnerView)
+        spinnerView.startAnimating()
+        
 //        self.delegate?.sendLoginRequest(email: self.emailTextField.text ?? "a", password: self.passwordTextField.text ?? "b")
 
         
         if((emailTextField.text?.isEmpty) != nil)
         {
-            loginUser()
+            //loginUser()
+            let parameters: [String: Any] = [
+                "grant_type": "",
+                "username": emailTextField.text!,
+                "password": passwordTextField.text!,
+                "scope": "",
+                "client_id": "",
+                "client_secret": ""
+            ]
+            APIHelper.shareInstance.loginUser(endpoint: "", parameters: parameters) { responseString, error in
+                print("login response " + responseString)
+
+                DispatchQueue.main.async {
+                    self.spinnerView.stopAnimating()
+                    self.spinnerView.removeFromSuperview()
+                    self.loginButton.setTitle("Log In", for: .normal)
+
+                    if(responseString == ""){
+                        self.showToast(message: "Something went wrong.", font: UIFont.preferredFont(forTextStyle: .body))
+                    }
+                    else{
+                        let dict = self.convertToDictionary(text: responseString)
+                        print(dict?["access_token"] as! String)
+                        UserDefaults.standard.setValue(dict?["access_token"] as! String, forKey: "access_token")
+                        self.navigateToProjects()
+
+                    }
+                }
+            }
         }
     }
     
@@ -170,69 +199,23 @@ class LoginView: UIView, UITextFieldDelegate {
         
     }
     
-    func loginUser(){
-        
-        let url = URL(string: "https://dev-crm-api.tooliqa.com/api/auth/api/v1/auth/login")!
-        var request = URLRequest(url: url)
-        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
-        request.httpMethod = "POST"
-        let parameters: [String: Any] = [
-            "grant_type": "",
-            "username": emailTextField.text!,
-            "password": passwordTextField.text!,
-            "scope": "",
-            "client_id": "",
-            "client_secret": ""
-        ]
-        request.httpBody = parameters.percentEncoded()
+    func showToast(message : String, font: UIFont) {
 
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            guard
-                let data = data,
-                let response = response as? HTTPURLResponse,
-                error == nil
-            else {                                                               // check for fundamental networking error
-                print("error", error ?? URLError(.badServerResponse))
-                return
-            }
-            
-            print(response.statusCode)
-            guard (200 ... 299) ~= response.statusCode else {                    // check for http errors
-                print("statusCode should be 2xx, but is \(response.statusCode)")
-                print("response = \(response)")
-                DispatchQueue.main.async {
-                    self.showToast(message: "Something went wrong.", font: UIFont.preferredFont(forTextStyle: .body))
-                }
-                return
-            }
-            
-            // do whatever you want with the `data`, e.g.:
-        
-            
-            do {
-                let responseObject = try JSONDecoder().decode(ResponseObject<Foo>.self, from: data)
-                //print(responseObject)
-            } catch {
-                print(error) // parsing error
-                
-                if let responseString = String(data: data, encoding: .utf8) {
-                    print("responseString = \(responseString)")
-                    let dict = self.convertToDictionary(text: responseString)
-                    print(dict?["access_token"] as! String)
-                    UserDefaults.standard.setValue(dict?["access_token"] as! String, forKey: "access_token")
-                    DispatchQueue.main.async {
-                        self.navigateToProjects()
-                    }
-                    
-                    
-                } else {
-                    print("unable to parse response as string")
-                }
-            }
-        }
-
-        task.resume()
+        let toastLabel = UILabel(frame: CGRect(x: self.frame.size.width/2 - 150, y: self.frame.size.height-100, width: 300, height: 35))
+        toastLabel.backgroundColor = UIColor.black.withAlphaComponent(0.6)
+        toastLabel.textColor = UIColor.white
+        toastLabel.font = font
+        toastLabel.textAlignment = .center
+        toastLabel.text = message
+        toastLabel.alpha = 1.0
+        toastLabel.layer.cornerRadius = 10;
+        toastLabel.clipsToBounds  =  true
+        self.addSubview(toastLabel)
+        UIView.animate(withDuration: 2.0, delay: 0.1, options: .curveEaseOut, animations: {
+             toastLabel.alpha = 0.0
+        }, completion: {(isCompleted) in
+            toastLabel.removeFromSuperview()
+        })
     }
     
     func convertToDictionary(text: String) -> [String: Any]? {
@@ -246,46 +229,5 @@ class LoginView: UIView, UITextFieldDelegate {
         return nil
     }
     
-    func showToast(message : String, font: UIFont) {
-
-        let toastLabel = UILabel(frame: CGRect(x: self.frame.size.width/2 - 150, y: self.frame.size.height-100, width: 300, height: 35))
-        toastLabel.backgroundColor = UIColor.black.withAlphaComponent(0.6)
-        toastLabel.textColor = UIColor.white
-        toastLabel.font = font
-        toastLabel.textAlignment = .center
-        toastLabel.text = message
-        toastLabel.alpha = 1.0
-        toastLabel.layer.cornerRadius = 10;
-        toastLabel.clipsToBounds  =  true
-        self.addSubview(toastLabel)
-        UIView.animate(withDuration: 4.0, delay: 0.1, options: .curveEaseOut, animations: {
-             toastLabel.alpha = 0.0
-        }, completion: {(isCompleted) in
-            toastLabel.removeFromSuperview()
-        })
-    }
-    
 }
 
-extension Dictionary {
-    func percentEncoded() -> Data? {
-        map { key, value in
-            let escapedKey = "\(key)".addingPercentEncoding(withAllowedCharacters: .urlQueryValueAllowed) ?? ""
-            let escapedValue = "\(value)".addingPercentEncoding(withAllowedCharacters: .urlQueryValueAllowed) ?? ""
-            return escapedKey + "=" + escapedValue
-        }
-        .joined(separator: "&")
-        .data(using: .utf8)
-    }
-}
-
-extension CharacterSet {
-    static let urlQueryValueAllowed: CharacterSet = {
-        let generalDelimitersToEncode = ":#[]@" // does not include "?" or "/" due to RFC 3986 - Section 3.4
-        let subDelimitersToEncode = "!$&'()*+,;="
-        
-        var allowed: CharacterSet = .urlQueryAllowed
-        allowed.remove(charactersIn: "\(generalDelimitersToEncode)\(subDelimitersToEncode)")
-        return allowed
-    }()
-}

@@ -84,6 +84,23 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         {
             //do nothing
             //setupLoginView()
+            let parameters: [String: Any] = [:]
+            APIHelper.shareInstance.apiCall(endpoint: "", parameters: parameters, method: "GET") { responseString, error in
+                print(responseString)
+                
+                DispatchQueue.main.async {
+                    if(responseString == ""){
+                        self.showToast(message: "Something went wrong.", font: UIFont.preferredFont(forTextStyle: .body))
+                    }
+                    else{
+                        let dict = self.convertToDictionary(text: responseString)
+                        print(dict?["access_token"] as! String)
+                        UserDefaults.standard.setValue(dict?["access_token"] as! String, forKey: "access_token")
+                        
+
+                    }
+                }
+            }
         }
         else
         {
@@ -417,6 +434,36 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         self.present(alert, animated: true) {
             alert.textFields?.first?.selectAll(nil)
         }
+    }
+    
+    func showToast(message : String, font: UIFont) {
+
+        let toastLabel = UILabel(frame: CGRect(x: self.view.frame.size.width/2 - 150, y: self.view.frame.size.height-100, width: 300, height: 35))
+        toastLabel.backgroundColor = UIColor.black.withAlphaComponent(0.6)
+        toastLabel.textColor = UIColor.white
+        toastLabel.font = font
+        toastLabel.textAlignment = .center
+        toastLabel.text = message
+        toastLabel.alpha = 1.0
+        toastLabel.layer.cornerRadius = 10;
+        toastLabel.clipsToBounds  =  true
+        self.view.addSubview(toastLabel)
+        UIView.animate(withDuration: 2.0, delay: 0.1, options: .curveEaseOut, animations: {
+             toastLabel.alpha = 0.0
+        }, completion: {(isCompleted) in
+            toastLabel.removeFromSuperview()
+        })
+    }
+    
+    func convertToDictionary(text: String) -> [String: Any]? {
+        if let data = text.data(using: .utf8) {
+            do {
+                return try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+            } catch {
+                print(error.localizedDescription)
+            }
+        }
+        return nil
     }
     
  
