@@ -84,113 +84,6 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         
     }
     
-    func fetchProjectsData(){
-        myCollectionViewType = false
-        if (isKeyPresentInUserDefaults(key: "access_token"))
-        {
-            myCollectionViewArray.removeAll()
-            spinnerView = UIActivityIndicatorView(style: .large)
-            spinnerView.color = .darkGray
-            spinnerView.center = self.view.center
-            self.view.addSubview(spinnerView)
-            spinnerView.startAnimating()
-            
-            let parameters: [String: Any] = [:]
-            APIHelper.shareInstance.apiCall(endpoint: "", parameters: parameters, method: "GET") { responseString, error in
-                //print(responseString)
-                
-                DispatchQueue.main.async {
-                    if(responseString == ""){
-                        self.showToast(message: "Something went wrong.", font: UIFont.preferredFont(forTextStyle: .body))
-                    }
-                    else{
-                        let dict = self.convertToDictionary(text: responseString)
-                        
-                        var myArray = [String]()
-                
-                        if let projects = dict?["projects"] as? [[String: AnyObject]] {
-                            //for i in 0...projects.count-1 {}
-                                for project in projects {
-                                    if let name = project["projectName"] as? String {
-                                        myArray.append(name)
-                                        //self.myCollectionViewArray.insert(["name": "Google", "clientName":"", "dateCreated":"22/11/2022", "status": "In Progress", "image": "ProjectSmapleImage.png"], at: 0)
-                                        self.myCollectionViewArray.append(["name": project["projectName"] as? String, "clientName":project["clientName"] as? String, "dateCreated":project["startDate"] as? String, "status": "In Progress", "image": "ProjectSmapleImage.png"])
-                                        UserDefaults.standard.setValue(project["clientId"] as! String, forKey: "clientId")
-                                    }
-                                }
-                        }
-                        self.spinnerView.stopAnimating()
-                        self.spinnerView.removeFromSuperview()
-                        self.setupScanListView()
-                        
-                    }
-                }
-            }
-        }
-        else
-        {
-            setupLoginView()
-        }
-        //UserDefaults.standard.setValue(dataModel, forKey: "access_token")
-        
-    }
-    
-    func createNewProject(name:String, clientID: String){
-        myCollectionViewType = false
-        if (isKeyPresentInUserDefaults(key: "access_token"))
-        {
-            myCollectionViewArray.removeAll()
-            UIView.animate(withDuration: 0.3, delay: 0.0, options: [], animations: {
-                self.createNewProjectView.frame = CGRect(x: self.screenWidth, y: 0, width: 400, height: self.screenHeight)
-            }, completion: { (finished: Bool) in
-                self.createNewProjectView.removeFromSuperview()
-            })
-            spinnerView = UIActivityIndicatorView(style: .medium)
-            spinnerView.color = .white
-            spinnerView.center = newScanButton.center
-            self.view.addSubview(spinnerView)
-            spinnerView.startAnimating()
-            newScanButton.setTitle("", for: .normal)
-            print(clientID)
-            print(name)
-            let parameters: [String: Any] = [
-                "clientId": clientID,
-                "projectName": name,
-                "startDate": "2022-12-10"
-            ]
-            APIHelper.shareInstance.apiCall(endpoint: "", parameters: parameters, method: "POST") { responseString, error in
-                //print(responseString)
-                
-                DispatchQueue.main.async {
-                    if(responseString == ""){
-                        self.showToast(message: "Something went wrong.", font: UIFont.preferredFont(forTextStyle: .body))
-                    }
-                    else
-                    {
-                    }
-                    self.spinnerView.stopAnimating()
-                    self.spinnerView.removeFromSuperview()
-                    //self.setupScanListView()
-                    self.myCollectionViewType = false
-                    
-                    UIView.animate(withDuration: 1.0, delay: 0.0, options: [], animations: {
-                        self.myCollectionViewArray.removeAll()
-                        self.myCollectionView.removeFromSuperview()
-                    }, completion: { (finished: Bool) in
-                        self.fetchProjectsData()
-                        self.newScanButton.setTitle("Create Project", for: .normal)
-                        self.projectTitle.text = "Organization Name | Projects"
-                    })
-                }
-            }
-        }
-        else
-        {
-            setupLoginView()
-        }
-        //UserDefaults.standard.setValue(dataModel, forKey: "access_token")
-        
-    }
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         //super.viewWillTransition(to: size, with: coordinator)
@@ -569,7 +462,118 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         }
         return nil
     }
+    // MARK: - API Calls
+    func fetchProjectsData(){
+        myCollectionViewType = false
+        if (isKeyPresentInUserDefaults(key: "access_token"))
+        {
+            myCollectionViewArray.removeAll()
+            spinnerView = UIActivityIndicatorView(style: .large)
+            spinnerView.color = .darkGray
+            spinnerView.center = self.view.center
+            self.view.addSubview(spinnerView)
+            spinnerView.startAnimating()
+            
+            let parameters: [String: Any] = [:]
+            APIHelper.shareInstance.apiCall(endpoint: "", parameters: parameters, method: "GET") { responseString, error in
+                //print(responseString)
+                
+                DispatchQueue.main.async {
+                    if(responseString == ""){
+                        self.showToast(message: "Something went wrong.", font: UIFont.preferredFont(forTextStyle: .body))
+                    }
+                    else{
+                        let dict = self.convertToDictionary(text: responseString)
+                        
+                        var myArray = [String]()
+                
+                        if let projects = dict?["projects"] as? [[String: AnyObject]] {
+                            //for i in 0...projects.count-1 {}
+                                for project in projects {
+                                    if let name = project["projectName"] as? String {
+                                        myArray.append(name)
+                                        //self.myCollectionViewArray.insert(["name": "Google", "clientName":"", "dateCreated":"22/11/2022", "status": "In Progress", "image": "ProjectSmapleImage.png"], at: 0)
+                                        self.myCollectionViewArray.append(["name": project["projectName"] as? String, "clientName":project["clientName"] as? String, "dateCreated":project["startDate"] as? String, "status": "In Progress", "image": "ProjectSmapleImage.png"])
+                                        UserDefaults.standard.setValue(project["clientId"] as! String, forKey: "clientId")
+                                    }
+                                }
+                        }
+                        self.spinnerView.stopAnimating()
+                        self.spinnerView.removeFromSuperview()
+                        self.setupScanListView()
+                        
+                    }
+                }
+            }
+        }
+        else
+        {
+            setupLoginView()
+        }
+        //UserDefaults.standard.setValue(dataModel, forKey: "access_token")
+        
+    }
     
+    func createNewProject(name:String, clientID: String){
+        myCollectionViewType = false
+        if (isKeyPresentInUserDefaults(key: "access_token"))
+        {
+            myCollectionViewArray.removeAll()
+            UIView.animate(withDuration: 0.3, delay: 0.0, options: [], animations: {
+                self.createNewProjectView.frame = CGRect(x: self.screenWidth, y: 0, width: 400, height: self.screenHeight)
+            }, completion: { (finished: Bool) in
+                self.createNewProjectView.removeFromSuperview()
+            })
+            spinnerView = UIActivityIndicatorView(style: .medium)
+            spinnerView.color = .white
+            spinnerView.center = newScanButton.center
+            self.view.addSubview(spinnerView)
+            spinnerView.startAnimating()
+            newScanButton.setTitle("", for: .normal)
+            //"730381f5-c003-4206-86d8-a21a68fb2b72"
+            let parameters: [String: Any] = [
+                "clientId": clientID,
+                "projectName": name,
+                "description": "",
+                "startDate": "2022-12-27",
+                "endDate": "",
+                "address": "",
+                "contactPoint": "",
+                "contact": "",
+                "projectType": "",
+                "projectImage": ""
+            ]
+            APIHelper.shareInstance.apiCall(endpoint: "", parameters: parameters, method: "POST") { responseString, error in
+                //print(responseString)
+                
+                DispatchQueue.main.async {
+                    if(responseString == ""){
+                        self.showToast(message: "Something went wrong.", font: UIFont.preferredFont(forTextStyle: .body))
+                    }
+                    else
+                    {
+                    }
+                    self.spinnerView.stopAnimating()
+                    self.spinnerView.removeFromSuperview()
+                    
+                    self.myCollectionViewType = false
+
+                    UIView.animate(withDuration: 1.0, delay: 0.0, options: [], animations: {
+                        self.myCollectionViewArray.removeAll()
+                        self.myCollectionView.removeFromSuperview()
+                    }, completion: { (finished: Bool) in
+                        self.fetchProjectsData()
+                        self.newScanButton.setTitle("Create Project", for: .normal)
+                        self.projectTitle.text = "Organization Name | Projects"
+                    })
+                }
+            }
+        }
+        else
+        {
+            
+        }
+    }
  
     // MARK: - UISearchBarDelegate protocol
     

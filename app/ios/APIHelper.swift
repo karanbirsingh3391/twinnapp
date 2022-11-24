@@ -43,6 +43,11 @@ final public class APIHelper: NSObject {
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.httpMethod = "POST"
         request.httpBody = parameters.percentEncoded()
+        //request.httpBody = try! JSONSerialization.data(withJSONObject: parameters)
+        
+        print("\(request.httpMethod!) \(request.url!)")
+        print(request.allHTTPHeaderFields!)
+        print(String(data: request.httpBody ?? Data(), encoding: .utf8)!)
         
         let config = URLSessionConfiguration.default
         config.waitsForConnectivity = true
@@ -90,12 +95,29 @@ final public class APIHelper: NSObject {
         let access_token = UserDefaults.standard.value(forKey: "access_token") as! String
         let bearer = "Bearer "+access_token
         var request = URLRequest(url: url)
-        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "accept")
         request.setValue(bearer, forHTTPHeaderField: "Authorization")
         request.httpMethod = method
-        request.httpBody = parameters.percentEncoded()
         
+        if(parameters.isEmpty)
+        {
+            request.httpBody = parameters.percentEncoded()
+        }
+        else
+        {
+            request.httpBody = try! JSONSerialization.data(withJSONObject: parameters, options: .prettyPrinted)
+        }
+        
+        //request.httpBody = try! JSONSerialization.data(withJSONObject: parameters)
+        //
+        
+        
+        //print("\(request.httpMethod!) \(request.url!)")
+        //print(request.allHTTPHeaderFields!)
+        print(String(data: request.httpBody ?? Data(), encoding: .utf8)!)
+        
+        //print(request.allHTTPHeaderFields)
         let config = URLSessionConfiguration.default
         config.waitsForConnectivity = true
         config.timeoutIntervalForResource = 5
@@ -110,29 +132,19 @@ final public class APIHelper: NSObject {
                 completion("", error)
                 return
             }
-            
+        
             print(response.statusCode)
-            guard (200 ... 299) ~= response.statusCode else {                    // check for http errors
-                print("statusCode should be 2xx, but is \(response.statusCode)")
-                completion("", nil)
-                return
-            }
-            
-//            do {
-//                let array = try JSONSerialization.jsonObject(with: data) as? [[String : Any]]
-//                print(array)
-//
-//                } catch {
-//                    print("Exception occured \(error))")
-//                }
-
-
-            
+//            guard (200 ... 299) ~= response.statusCode else {                    // check for http errors
+//                print("statusCode should be 2xx, but is \(response.statusCode)")
+//                completion("", nil)
+//                return
+//            }
+                        
             do {
-                let array = try JSONSerialization.jsonObject(with: data) as? [[String : Any]]
+                //let array = try JSONSerialization.jsonObject(with: data) as? [[String : Any]]
 //                let responseObject = try JSONDecoder().decode(ResponseObject<Foo>.self, from: data)
-                print("response object ")
-                print(array)
+                //print("response object ")
+                //print(array)
                 if let responseString = String(data: data, encoding: .utf8) {
                     //print("responseString = \(responseString)")
                     completion(responseString, nil)
