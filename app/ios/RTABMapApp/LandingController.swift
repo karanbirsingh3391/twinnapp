@@ -170,6 +170,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         backButton.setImage(UIImage(named: "BackButton"), for: .highlighted)
         backButton.addTarget(self, action: #selector(backButtonAction), for: .touchUpInside)
         self.view.addSubview(backButton)
+        backButton.isHidden = true
         
         newScanButton.frame = CGRect(x: screenWidth-156, y: screenHeight-62, width: 146, height: 52)
         newScanButton.backgroundColor = .clear
@@ -433,7 +434,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         else
         {
             setupLoginView()
-            self.showToast(message: "Your session has expired, please login again.", font: UIFont.preferredFont(forTextStyle: .body))
+            //self.showToast(message: "Your session has expired, please login again.", font: UIFont.preferredFont(forTextStyle: .body))
         }
     }
     
@@ -936,21 +937,25 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         spinnerView.center = self.view.center
         self.view.addSubview(spinnerView)
         spinnerView.startAnimating()
+        self.view.isUserInteractionEnabled = false
     }
     
     func removeSpinner(){
         self.spinnerView.stopAnimating()
         self.spinnerView.removeFromSuperview()
+        self.view.isUserInteractionEnabled = true
     }
     
     // MARK: - Switch Labels
     func labelsSwitchToProjectsView(){
         self.newScanButton.setTitle("Create Project", for: .normal)
         self.projectTitle.text = "Organization Name | Projects"
+        self.backButton.isHidden = true
     }
     
     func labelsSwitchToScansView(){
         self.newScanButton.setTitle("New Scan", for: .normal)
+        self.backButton.isHidden = false
     }
     
 }//class ends
