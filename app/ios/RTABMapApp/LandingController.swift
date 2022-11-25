@@ -207,6 +207,21 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         
     }
     
+    func createNewProjectView(withName: String, withProjectID: String, isEdit: Bool){
+        createNewProjectView = CreateNewProjectView(frame: CGRect(x: screenWidth, y: 0, width: 400, height: screenHeight), screenWidth: screenWidth, screenHeight: screenHeight, projectName: withName, projectID: withProjectID, isEdit:isEdit)
+        createNewProjectView.backgroundColor = .systemGray6
+        createNewProjectView.delegate = self
+        self.view.addSubview(createNewProjectView)
+        //self.view.bringSubviewToFront(newScanButton)
+        //
+        UIView.animate(withDuration: 0.3, delay: 0.0, options: [], animations: {
+            self.createNewProjectView.frame = CGRect(x: self.screenWidth-400, y: 0, width: 400, height: self.screenHeight)
+
+        }, completion: { (finished: Bool) in
+
+        })
+    }
+    
     // MARK: - Helper Functions
     func isKeyPresentInUserDefaults(key: String) -> Bool {
         return UserDefaults.standard.object(forKey: key) != nil
@@ -422,7 +437,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         }
     }
     
-    func createNewProject(name:String, clientID: String){
+    func createNewProject(name:String, clientID: String, projectID: String){
         isScansCollectionViewType = false
         if (isKeyPresentInUserDefaults(key: "access_token"))
         {
@@ -448,8 +463,6 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                 "projectImage": ""
             ]
             APIHelper.shareInstance.apiCall(endpoint: "", parameters: parameters, method: "POST") { responseString, error in
-                //print(responseString)
-                
                 DispatchQueue.main.async {
                     self.removeSpinner()
 
@@ -459,6 +472,64 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                     else
                     {
                         self.showToast(message: "Project created successfully", font: UIFont.preferredFont(forTextStyle: .body))
+
+                        UIView.animate(withDuration: 1.0, delay: 0.0, options: [], animations: {
+                            self.myCollectionViewArray.removeAll()
+                            self.myCollectionView.removeFromSuperview()
+                        }, completion: { (finished: Bool) in
+                            self.fetchProjectsData()
+                            self.labelsSwitchToProjectsView()
+                        })
+                        
+                    }
+                    
+                }
+            }
+        }
+        else
+        {
+            setupLoginView()
+            self.showToast(message: "Your session has expired, please login again.", font: UIFont.preferredFont(forTextStyle: .body))
+        }
+    }
+    
+    func modifyProject(name:String, clientID: String, projectID: String){
+        isScansCollectionViewType = false
+        if (isKeyPresentInUserDefaults(key: "access_token"))
+        {
+            myCollectionViewArray.removeAll()
+            UIView.animate(withDuration: 0.3, delay: 0.0, options: [], animations: {
+                self.createNewProjectView.frame = CGRect(x: self.screenWidth, y: 0, width: 400, height: self.screenHeight)
+            }, completion: { (finished: Bool) in
+                self.createNewProjectView.removeFromSuperview()
+            })
+            self.addSpinner()
+            newScanButton.setTitle("", for: .normal)
+            //"730381f5-c003-4206-86d8-a21a68fb2b72"
+            let parameters: [String: Any] = [
+                "clientId": clientID,
+                "projectName": name,
+                "projectId":projectID,
+                "description": "",
+                "startDate": "2022-12-27",
+                "endDate": "",
+                "address": "",
+                "contactPoint": "",
+                "contact": "",
+                "projectType": "",
+                "projectImage": ""
+            ]
+            APIHelper.shareInstance.apiCall(endpoint: "", parameters: parameters, method: "PUT") { responseString, error in
+                DispatchQueue.main.async {
+                    self.removeSpinner()
+
+                    if(responseString == ""){
+                        self.showToast(message: "Something went wrong.", font: UIFont.preferredFont(forTextStyle: .body))
+                    }
+                    else
+                    {
+                        //print(responseString)
+                        self.showToast(message: "Project updated successfully", font: UIFont.preferredFont(forTextStyle: .body))
 
                         UIView.animate(withDuration: 1.0, delay: 0.0, options: [], animations: {
                             self.myCollectionViewArray.removeAll()
@@ -491,8 +562,6 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
             ]
             print(projectID)
             APIHelper.shareInstance.apiCall(endpoint:"/"+projectID, parameters: parameters, method: "DELETE") { responseString, error in
-                //print(responseString)
-                
                 DispatchQueue.main.async {
                     self.removeSpinner()
 
@@ -502,6 +571,47 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                     else
                     {
                         self.showToast(message: "Project deleted successfully", font: UIFont.preferredFont(forTextStyle: .body))
+
+                        UIView.animate(withDuration: 1.0, delay: 0.0, options: [], animations: {
+                            self.myCollectionViewArray.removeAll()
+                            self.myCollectionView.removeFromSuperview()
+                        }, completion: { (finished: Bool) in
+                            self.fetchProjectsData()
+                            self.labelsSwitchToProjectsView()
+                        })
+                        
+                    }
+                    
+                }
+            }
+        }
+        else
+        {
+            setupLoginView()
+            self.showToast(message: "Your session has expired, please login again.", font: UIFont.preferredFont(forTextStyle: .body))
+        }
+    }
+    
+    func duplicateProject(projectID:String){
+        isScansCollectionViewType = false
+        if (isKeyPresentInUserDefaults(key: "access_token"))
+        {
+            
+            self.addSpinner()
+            let parameters: [String: Any] = [
+                "projectId": projectID
+            ]
+            print(projectID)
+            APIHelper.shareInstance.apiCall(endpoint:"/duplicate/project", parameters: parameters, method: "POST") { responseString, error in
+                DispatchQueue.main.async {
+                    self.removeSpinner()
+
+                    if(responseString == ""){
+                        self.showToast(message: "Something went wrong.", font: UIFont.preferredFont(forTextStyle: .body))
+                    }
+                    else
+                    {
+                        self.showToast(message: "Project duplicated successfully", font: UIFont.preferredFont(forTextStyle: .body))
 
                         UIView.animate(withDuration: 1.0, delay: 0.0, options: [], animations: {
                             self.myCollectionViewArray.removeAll()
@@ -730,19 +840,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         }
         else
         {
-            createNewProjectView = CreateNewProjectView(frame: CGRect(x: screenWidth, y: 0, width: 400, height: screenHeight), screenWidth: screenWidth, screenHeight: screenHeight)
-            createNewProjectView.backgroundColor = .systemGray6
-            createNewProjectView.delegate = self
-            self.view.addSubview(createNewProjectView)
-            //self.view.bringSubviewToFront(newScanButton)
-            //
-            UIView.animate(withDuration: 0.3, delay: 0.0, options: [], animations: {
-                self.createNewProjectView.frame = CGRect(x: self.screenWidth-400, y: 0, width: 400, height: self.screenHeight)
-
-            }, completion: { (finished: Bool) in
-
-            })
-            
+            self.createNewProjectView(withName: "", withProjectID: "", isEdit:false)
         }
 
     }
@@ -797,12 +895,35 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                 return UIMenu(title: "", children: [shareAction, editAction, deleteAction])
             }
             else{
+                let editAction = UIAction(title: "Edit Project Name", image: UIImage(systemName: "square.and.pencil")) { _ in
+                    let projectID = self.myCollectionViewArray[interaction.view!.tag]["projectId"] as? String
+                    let projectName = self.myCollectionViewArray[interaction.view!.tag]["name"] as? String
+                    self.createNewProjectView(withName: projectName!, withProjectID: projectID!, isEdit: true)
+                }
+                
+                let copyLinkAction = UIAction(title: "Copy Link", image: UIImage(systemName: "square.and.arrow.up")) { _ in
+                    let projectID = self.myCollectionViewArray[interaction.view!.tag]["projectId"] as? String
+                    
+                    // write to clipboard
+                    UIPasteboard.general.string = projectID!
+
+                    // read from clipboard
+                    //let content = UIPasteboard.general.string
+                    
+                    self.showToast(message: "Project ID copied to clipboard.", font: UIFont.preferredFont(forTextStyle: .body))
+                }
+                
+                let duplicateAction = UIAction(title: "Duplicate", image: UIImage(systemName: "square.and.arrow.up")) { _ in
+                    let projectID = self.myCollectionViewArray[interaction.view!.tag]["projectId"] as? String
+                    self.duplicateProject(projectID: projectID!)
+                }
+                
                 let deleteAction = UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
                     
                     let projectID = self.myCollectionViewArray[interaction.view!.tag]["projectId"] as? String
                     self.deleteProject(projectID: projectID!)
                 }
-                return UIMenu(title: "", children: [deleteAction])
+                return UIMenu(title: "", children: [editAction, copyLinkAction, duplicateAction, deleteAction])
             }
             
         }
@@ -843,8 +964,15 @@ extension LandingController: LoginViewDelegate {
 
 // MARK: - CreateNewProjectViewExtension
 extension LandingController: CreateNewProjectViewDelegate {
-    func sendRequest(requestString: String) {
-        self.createNewProject(name: requestString, clientID: UserDefaults.standard.object(forKey: "clientId")! as! String)
+    func sendRequest(projectName: String, projectID: String, isEdit: Bool) {
+        
+        if(isEdit){
+            self.modifyProject(name: projectName, clientID: UserDefaults.standard.object(forKey: "clientId")! as! String, projectID: projectID)
+        }
+        else{
+            self.createNewProject(name: projectName, clientID: UserDefaults.standard.object(forKey: "clientId")! as! String, projectID: projectID)
+        }
+        
+        
     }
 }
-

@@ -9,13 +9,15 @@ import Foundation
 import UIKit
 
 protocol CreateNewProjectViewDelegate: class {
-    func sendRequest(requestString: String)
+    func sendRequest(projectName: String, projectID: String, isEdit:Bool)
 }
 
 class CreateNewProjectView: UIView, UITextFieldDelegate {
     
     public var delegate: CreateNewProjectViewDelegate!
     public var projectNameTextField: UITextField!
+    public var projectID: String!
+    public var isEdit: Bool!
     private var myCancelButton: UIButton!
     private var createProjectButton: UIButton!
     
@@ -23,9 +25,12 @@ class CreateNewProjectView: UIView, UITextFieldDelegate {
       super.init(coder: aDecoder)
     }
     
-    init(frame: CGRect, screenWidth: CGFloat, screenHeight: CGFloat) {
+    init(frame: CGRect, screenWidth: CGFloat, screenHeight: CGFloat, projectName: String, projectID: String, isEdit: Bool) {
         super.init(frame: frame)
         //self.isUserInteractionEnabled = true
+        
+        self.projectID = projectID
+        self.isEdit = isEdit
         
         let projectNameLabel = UILabel(frame: CGRect(x: 25, y: 50, width: 150, height: 21))
         projectNameLabel.textAlignment = .left
@@ -39,7 +44,7 @@ class CreateNewProjectView: UIView, UITextFieldDelegate {
         
         projectNameTextField = UITextField(frame: CGRect(x: 25, y: 80, width: 350, height: 40))
         projectNameTextField.placeholder = "Enter Project Name"
-        projectNameTextField.text = "Oculus"
+        projectNameTextField.text = projectName
         projectNameTextField.font = UIFont.systemFont(ofSize: 15)
         projectNameTextField.borderStyle = UITextField.BorderStyle.roundedRect
         projectNameTextField.autocorrectionType = UITextAutocorrectionType.no
@@ -68,7 +73,7 @@ class CreateNewProjectView: UIView, UITextFieldDelegate {
         createProjectButton = UIButton(frame: CGRect(x: self.frame.width-156, y: screenHeight-62, width: 146, height: 52))
         createProjectButton.backgroundColor = .clear
         //myCancelButton.isUserInteractionEnabled = true
-        createProjectButton.setTitle("Create Project", for: .normal)
+        
         //createProjectButton.setTitleColor(UIColor(red: 0.259, green: 0.522, blue: 0.957, alpha: 1), for: .normal)
         createProjectButton.addTarget(self, action: #selector(createProjectButtonAction), for: .touchUpInside)
         let l = CAGradientLayer()
@@ -79,6 +84,14 @@ class CreateNewProjectView: UIView, UITextFieldDelegate {
         l.cornerRadius = 10
         createProjectButton.layer.addSublayer(l)
         self.addSubview(createProjectButton)
+        
+        if(self.isEdit){
+            createProjectButton.setTitle("Update", for: .normal)
+        }
+        else{
+            createProjectButton.setTitle("Create Project", for: .normal)
+        }
+        
         
     }
     
@@ -93,9 +106,11 @@ class CreateNewProjectView: UIView, UITextFieldDelegate {
     }
     
     @objc func createProjectButtonAction(sender: UIButton!){
-        print("create project button pressed ")
-        self.delegate?.sendRequest(requestString: projectNameTextField.text!)
+        print("create project button pressed")
+        print(projectNameTextField.text!)
+        self.delegate?.sendRequest(projectName: projectNameTextField.text!, projectID: self.projectID, isEdit: self.isEdit)
     }
+    
     
     func textFieldDidBeginEditing(_ textField: UITextField){
         print("begin editing")
