@@ -91,7 +91,7 @@ final public class APIHelper: NSObject {
     
     func apiCall(endpoint:String, parameters:[String: Any], method: String ,completion: @escaping(String, Error?) -> ()){
         
-        let url = URL(string: baseURLCRM)!
+        let url = URL(string: baseURLCRM+endpoint)!
         let access_token = UserDefaults.standard.value(forKey: "access_token") as! String
         let bearer = "Bearer "+access_token
         var request = URLRequest(url: url)
@@ -110,7 +110,7 @@ final public class APIHelper: NSObject {
         }
         
         //request.httpBody = try! JSONSerialization.data(withJSONObject: parameters)
-        //
+        
         
         
         //print("\(request.httpMethod!) \(request.url!)")

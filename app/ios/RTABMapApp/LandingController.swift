@@ -47,72 +47,39 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     // MARK: - UI Rendering Functions
     override func viewDidLoad() {
         super.viewDidLoad()
-        //self.view.translatesAutoresizingMaskIntoConstraints = false
         self.view.isUserInteractionEnabled = true
         isScansCollectionViewType = false
-        
-//        self.updateDatabases()
-//        if databases.isEmpty {
-//            return
-//        }
         setupBaseElements()
-        //setupProjectListView()
         fetchProjectsData()
         
     }
     
-    
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         //super.viewWillTransition(to: size, with: coordinator)
-        
         self.view.layoutSubviews()
-//        self.view.setNeedsDisplay()
-//            if UIDevice.current.orientation.isLandscape {
-//                print("Landscape")
-//            } else {
-//                print("Portrait")
-//            }
-//        self.view.contentMode = .redraw
-//        newScanButton.frame = CGRect(x: screenWidth-110, y: screenHeight-60, width: 100, height: 50)
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-//        let timer = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(self.update), userInfo: nil, repeats: false)
-//        self.updateDatabases()
-        if(isScansCollectionViewType)
-        {
-            self.updateDatabases()
-            self.myCollectionView.removeFromSuperview()
-            UIView.animate(withDuration: 1.0, delay: 1.0, options: [], animations: {
-                self.setupScanListView()
-            }, completion: { (finished: Bool) in
-                
-            })
-        }
-        else
-        {
-            
+        if(isScansCollectionViewType){
+            self.createCollectionView()
         }
         
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         //self.myCollectionView.removeFromSuperview()
-        
     }
         
-    func setupLoginView()
-    {
+    func setupLoginView(){
         let loginView = LoginView(frame: CGRect(x: 0, y: 0, width: screenWidth, height: screenHeight), screenWidth: screenWidth, screenHeight: screenHeight)
         loginView.backgroundColor = .white
         loginView.delegate = self
         self.view.addSubview(loginView)
     }
 
-    func setupBaseElements()
-    {
+    func setupBaseElements(){
         projectTitle = UILabel(frame: CGRect(x: 140, y: 50, width: 400, height: 21))
         //projectTitle.center = CGPoint(x: 160, y: 285)
         //projectTitle.font = UIFont(name: projectTitle.font.fontName, size: 20)
@@ -220,18 +187,16 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     
     }
     
-    func setupScanListView()
-    {
+    func setupScanListView(){
         let layout:UICollectionViewFlowLayout = UICollectionViewFlowLayout.init()
         myCollectionView = ProjectsListCollectionView(frame: CGRect(x: 122, y: 120, width: UIScreen.main.bounds.width-132, height: UIScreen.main.bounds.height-120), collectionViewLayout: layout)
-//        myCollectionView = ProjectsListCollectionView(frame: CGRect(x: 122, y: 148, width: UIScreen.main.bounds.width-132, height: UIScreen.main.bounds.height-200))
-//        myCollectionView.setCollectionViewLayout(layout, animated: true)
+        //myCollectionView = ProjectsListCollectionView(frame: CGRect(x: 122, y: 148, width: UIScreen.main.bounds.width-132, height: UIScreen.main.bounds.height-200))
+        //myCollectionView.setCollectionViewLayout(layout, animated: true)
         layout.scrollDirection = UICollectionView.ScrollDirection.vertical
         //layout.sectionInset = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
-//        layout.itemSize = CGSize(width: 200, height: 280)
-//        layout.minimumLineSpacing = 50
-//        layout.minimumInteritemSpacing = 10
-        
+        //layout.itemSize = CGSize(width: 200, height: 280)
+        //layout.minimumLineSpacing = 50
+        //layout.minimumInteritemSpacing = 10
         myCollectionView.delegate = self
         myCollectionView.dataSource = self
         myCollectionView.backgroundColor = UIColor.clear
@@ -276,16 +241,13 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
             }
             else
             {
-//                myCollectionViewArray.insert(["name": "Google", "clientName":"", "dateCreated":"22/11/2022", "status": "In Progress", "image": "ProjectSmapleImage.png"], at: 0)
-//                myCollectionViewArray.insert(["name": "Facebook", "clientName":"", "dateCreated":"22/11/2022", "status": "In Progress", "image": "ProjectSmapleImage.png"], at: 1)
-//                myCollectionViewArray.insert(["name": "Microsoft", "clientName":"", "dateCreated":"22/11/2022", "status": "In Progress", "image": "ProjectSmapleImage.png"], at: 2)
+                //myCollectionViewArray.insert(["name": "Google", "clientName":"", "dateCreated":"22/11/2022", "status": "In Progress", "image": "ProjectSmapleImage.png"], at: 0)
+
             }
         } catch {
             print("Error while enumerating files : \(error.localizedDescription)")
             return
         }
-        
-        //print(myCollectionViewArray)
     }
     
     func getDocumentDirectory() -> URL {
@@ -354,14 +316,8 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                     catch {
                         print("Error renaming file \(fileURL) to \(filePath)")
                     }
+                    self.createCollectionView()
                     
-                    self.updateDatabases()
-                    self.myCollectionView.removeFromSuperview()
-                    UIView.animate(withDuration: 1.0, delay: 1.0, options: [], animations: {
-                        self.setupScanListView()
-                    }, completion: { (finished: Bool) in
-                        
-                    })
                     
                 }
             }
@@ -432,7 +388,6 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                 DispatchQueue.main.async {
                     self.removeSpinner()
                     
-                    
                     if(responseString == ""){
                         self.showToast(message: "Something went wrong.", font: UIFont.preferredFont(forTextStyle: .body))
                     }
@@ -446,15 +401,16 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                                 for project in projects {
                                     if let name = project["projectName"] as? String {
                                         myArray.append(name)
-                                        //self.myCollectionViewArray.insert(["name": "Google", "clientName":"", "dateCreated":"22/11/2022", "status": "In Progress", "image": "ProjectSmapleImage.png"], at: 0)
-                                        self.myCollectionViewArray.append(["name": project["projectName"] as? String, "clientName":project["clientName"] as? String, "dateCreated":project["startDate"] as? String, "status": "In Progress", "image": "ProjectSmapleImage.png"])
+                                        self.myCollectionViewArray.append(["name": project["projectName"] as? String, "clientName":project["clientName"] as? String, "dateCreated":project["startDate"] as? String,
+                                            "status": "In Progress",
+                                            "image": "ProjectSmapleImage.png",
+                                            "projectId":project["projectId"] as? String])
                                         UserDefaults.standard.setValue(project["clientId"] as! String, forKey: "clientId")
                                     }
                                 }
                         }
                         
                         self.setupScanListView()
-                        
                     }
                 }
             }
@@ -462,10 +418,8 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         else
         {
             setupLoginView()
-            self.showToast(message: "Session expired, please login again.", font: UIFont.preferredFont(forTextStyle: .body))
+            self.showToast(message: "Your session has expired, please login again.", font: UIFont.preferredFont(forTextStyle: .body))
         }
-        //UserDefaults.standard.setValue(dataModel, forKey: "access_token")
-        
     }
     
     func createNewProject(name:String, clientID: String){
@@ -505,7 +459,6 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                     else
                     {
                         self.showToast(message: "Project created successfully", font: UIFont.preferredFont(forTextStyle: .body))
-                        self.isScansCollectionViewType = false
 
                         UIView.animate(withDuration: 1.0, delay: 0.0, options: [], animations: {
                             self.myCollectionViewArray.removeAll()
@@ -514,6 +467,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                             self.fetchProjectsData()
                             self.labelsSwitchToProjectsView()
                         })
+                        
                     }
                     
                 }
@@ -522,7 +476,50 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         else
         {
             setupLoginView()
-            self.showToast(message: "Session expired, please login again.", font: UIFont.preferredFont(forTextStyle: .body))
+            self.showToast(message: "Your session has expired, please login again.", font: UIFont.preferredFont(forTextStyle: .body))
+        }
+    }
+    
+    func deleteProject(projectID:String){
+        isScansCollectionViewType = false
+        if (isKeyPresentInUserDefaults(key: "access_token"))
+        {
+            
+            self.addSpinner()
+            let parameters: [String: Any] = [
+                "projectId": projectID
+            ]
+            print(projectID)
+            APIHelper.shareInstance.apiCall(endpoint:"/"+projectID, parameters: parameters, method: "DELETE") { responseString, error in
+                //print(responseString)
+                
+                DispatchQueue.main.async {
+                    self.removeSpinner()
+
+                    if(responseString == ""){
+                        self.showToast(message: "Something went wrong.", font: UIFont.preferredFont(forTextStyle: .body))
+                    }
+                    else
+                    {
+                        self.showToast(message: "Project deleted successfully", font: UIFont.preferredFont(forTextStyle: .body))
+
+                        UIView.animate(withDuration: 1.0, delay: 0.0, options: [], animations: {
+                            self.myCollectionViewArray.removeAll()
+                            self.myCollectionView.removeFromSuperview()
+                        }, completion: { (finished: Bool) in
+                            self.fetchProjectsData()
+                            self.labelsSwitchToProjectsView()
+                        })
+                        
+                    }
+                    
+                }
+            }
+        }
+        else
+        {
+            setupLoginView()
+            self.showToast(message: "Your session has expired, please login again.", font: UIFont.preferredFont(forTextStyle: .body))
         }
     }
  
@@ -711,6 +708,15 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         }
     }
     
+    func createCollectionView(){
+        self.updateDatabases()
+        self.myCollectionView.removeFromSuperview()
+        UIView.animate(withDuration: 1.0, delay: 1.0, options: [], animations: {
+            self.setupScanListView()
+        }, completion: { (finished: Bool) in
+        })
+    }
+    
     // MARK: - Button Actions
     @objc func newScanButtonAction(sender: UIButton!){
         print("button Pressed")
@@ -767,40 +773,39 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     
     // MARK: - Context Menu Actions
     func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
-        //print(interaction.view?.tag)
+        
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
-                    let shareAction = UIAction(title: "Share", image: UIImage(systemName: "square.and.arrow.up")) { _ in
-                        print(self.databases[interaction.view!.tag])
-                        self.shareFile(self.databases[interaction.view!.tag])
+            if(self.isScansCollectionViewType){
+                let shareAction = UIAction(title: "Share", image: UIImage(systemName: "square.and.arrow.up")) { _ in
+                    print(self.databases[interaction.view!.tag])
+                    self.shareFile(self.databases[interaction.view!.tag])
+                }
+                
+                let editAction = UIAction(title: "Rename", image: UIImage(systemName: "square.and.pencil")) { _ in
+                    self.rename(fileURL: self.databases[interaction.view!.tag])
+                }
+                
+                let deleteAction = UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
+                    do {
+                        try FileManager.default.removeItem(at: self.databases[interaction.view!.tag])
                     }
-                    let editAction = UIAction(title: "Rename", image: UIImage(systemName: "square.and.pencil")) { _ in
-                        self.rename(fileURL: self.databases[interaction.view!.tag])
-                        
+                    catch {
+                        print("Error deleting file \(self.databases[interaction.view!.tag])")
                     }
-                    let deleteAction = UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
-                        do {
-                            try FileManager.default.removeItem(at: self.databases[interaction.view!.tag])
-                        }
-                        catch {
-                            print("Error deleting file \(self.databases[interaction.view!.tag])")
-                        }
-                        self.updateDatabases()
-                        self.myCollectionView.removeFromSuperview()
-                        UIView.animate(withDuration: 1.0, delay: 1.0, options: [], animations: {
-                            self.setupScanListView()
-                        }, completion: { (finished: Bool) in
-                            
-                        })
-                        
-//                        self.myCollectionView.reloadData()
-//                        self.myCollectionView.performBatchUpdates({ [weak self] in
-//                            let visibleItems = self?.myCollectionView.indexPathsForVisibleItems ?? []
-//                            self?.myCollectionView.reloadItems(at: visibleItems)
-//                        }, completion: { (_) in
-//                        })
-                    }
-                    return UIMenu(title: "", children: [shareAction, editAction, deleteAction])
-             }
+                    self.createCollectionView()
+                }
+                return UIMenu(title: "", children: [shareAction, editAction, deleteAction])
+            }
+            else{
+                let deleteAction = UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
+                    
+                    let projectID = self.myCollectionViewArray[interaction.view!.tag]["projectId"] as? String
+                    self.deleteProject(projectID: projectID!)
+                }
+                return UIMenu(title: "", children: [deleteAction])
+            }
+            
+        }
     }
     
     // MARK: - Activity Spinner Functions
@@ -827,7 +832,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         self.newScanButton.setTitle("New Scan", for: .normal)
     }
     
-}
+}//class ends
 
 // MARK: - LoginViewExtension
 extension LandingController: LoginViewDelegate {
