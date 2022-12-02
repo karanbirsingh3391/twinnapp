@@ -141,7 +141,7 @@ class LoginView: UIView, UITextFieldDelegate {
                 "client_id": "",
                 "client_secret": ""
             ]
-            APIHelper.shareInstance.loginUser(endpoint: "", parameters: parameters) { responseString, error in
+            APIHelper.shareInstance.User(endpoint: "/auth/login",parameters: parameters, method: "POST") { responseString, error in
                 print("login response " + responseString)
 
                 DispatchQueue.main.async {

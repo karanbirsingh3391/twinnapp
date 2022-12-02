@@ -23,7 +23,7 @@ final public class APIHelper: NSObject {
     
     public static let shareInstance = APIHelper()
     
-    private let baseURLAuth: String = "https://dev-crm-api.tooliqa.com/api/auth/api/v1/auth/login"
+    private let baseURLAuth: String = "https://dev-crm-api.tooliqa.com/api/auth/api/v1"
     private let baseURLCRM: String = "https://dev-crm-api.tooliqa.com/api/crm/api/v1/project"
     
     struct ResponseObject<T: Decodable>: Decodable {
@@ -35,15 +35,18 @@ final public class APIHelper: NSObject {
         let token_type: String
     }
     
-    func loginUser(endpoint:String, parameters:[String: Any], completion: @escaping(String, Error?) -> ()){
+    func User(endpoint:String, parameters:[String: Any], method: String, completion: @escaping(String, Error?) -> ()){
         
-        let url = URL(string: baseURLAuth)!
+        let url = URL(string: baseURLAuth+endpoint)!
+        let access_token = UserDefaults.standard.value(forKey: "access_token") as! String
+        let bearer = "Bearer "+access_token
+        
         var request = URLRequest(url: url)
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
-        request.httpMethod = "POST"
+        request.setValue(bearer, forHTTPHeaderField: "Authorization")
+        request.httpMethod = method
         request.httpBody = parameters.percentEncoded()
-        //request.httpBody = try! JSONSerialization.data(withJSONObject: parameters)
         
         print("\(request.httpMethod!) \(request.url!)")
         print(request.allHTTPHeaderFields!)

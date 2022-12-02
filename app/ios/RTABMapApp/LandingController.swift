@@ -34,7 +34,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     private let profileButton = UIButton()
     private let backButton = UIButton()
     private let helpButton = UIButton()
-    private var searchBar = UISearchBar()
+    private var mySearchBar = UISearchBar()
     private var myCollectionView:UICollectionView!
     //private var myCollectionViewArray = [String]()
     private var myCollectionViewArray: [[String: Any]] = []
@@ -42,6 +42,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     public var spinnerView: UIActivityIndicatorView!
     public var createNewProjectView: CreateNewProjectView!
     public var myProfileView: ProfileView!
+    private var myProfileDictionary: [String: Any] = [:]
     //private var loginView = UIView()
     
 
@@ -51,6 +52,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         self.view.isUserInteractionEnabled = true
         isScansCollectionViewType = false
         setupBaseElements()
+        fetchProfile()
         fetchProjectsData()
         
     }
@@ -94,16 +96,16 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         projectTitle.text = "Organization Name | Projects"
         self.view.addSubview(projectTitle)
         
-        searchBar.frame = CGRect(x:screenWidth-320, y:36 , width:300, height: 44)
-        searchBar.searchBarStyle = UISearchBar.Style.default
-        searchBar.backgroundColor = .clear
-        searchBar.placeholder = " Search"
-        searchBar.sizeToFit()
-        searchBar.isTranslucent = false
-        searchBar.backgroundImage = UIImage()
-        searchBar.delegate = self
+        mySearchBar.frame = CGRect(x:screenWidth-320, y:36 , width:300, height: 44)
+        mySearchBar.searchBarStyle = UISearchBar.Style.default
+        mySearchBar.backgroundColor = .clear
+        mySearchBar.placeholder = " Search"
+        mySearchBar.sizeToFit()
+        mySearchBar.isTranslucent = false
+        mySearchBar.backgroundImage = UIImage()
+        mySearchBar.delegate = self
         //navigationItem.titleView = searchBar
-        self.view.addSubview(searchBar)
+        self.view.addSubview(mySearchBar)
         
         menuView.frame = CGRect(x:0, y:0 , width:80, height: screenHeight)
         menuView.backgroundColor = .systemGray6
@@ -151,7 +153,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         buttonLabel.adjustsFontSizeToFitWidth = true
         menuViewProjectsButton.addSubview(buttonLabel)
         
-        profileButton.frame = CGRect(x: 20, y: screenHeight-125, width: 40, height: 40)
+        profileButton.frame = CGRect(x: 20, y: screenHeight-70, width: 40, height: 40)
         //profileButton.backgroundColor = .systemGreen
         profileButton.setImage(UIImage(named: "ProfilePlaceholder"), for: .normal)
         profileButton.setImage(UIImage(named: "ProfilePlaceholder"), for: .highlighted)
@@ -163,7 +165,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         helpButton.setImage(UIImage(named: "HelpIcon"), for: .normal)
         helpButton.setImage(UIImage(named: "HelpIcon"), for: .highlighted)
         helpButton.addTarget(self, action: #selector(logoutButtonAction), for: .touchUpInside)
-        menuView.addSubview(helpButton)
+        //menuView.addSubview(helpButton)
         
         backButton.frame = CGRect(x: 100, y: 50, width: 20, height: 20)
         //profileButton.backgroundColor = .systemGreen
@@ -390,6 +392,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         }
         return nil
     }
+    
     // MARK: - API Calls
     func fetchProjectsData(){
         isScansCollectionViewType = false
@@ -634,6 +637,34 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
             self.showToast(message: "Your session has expired, please login again.", font: UIFont.preferredFont(forTextStyle: .body))
         }
     }
+    
+    func fetchProfile(){
+        isScansCollectionViewType = false
+        if (isKeyPresentInUserDefaults(key: "access_token"))
+        {
+            
+            let parameters: [String: Any] = [:]
+            APIHelper.shareInstance.User(endpoint:"/user/me", parameters: parameters, method: "GET") { responseString, error in
+                DispatchQueue.main.async {
+                    if(responseString == ""){
+                        self.showToast(message: "Something went wrong.", font: UIFont.preferredFont(forTextStyle: .body))
+                    }
+                    else
+                    {
+                        //{"userId":"92d2f8b5-70df-4880-a4ee-86f12fa700e6","username":"karan3391","email":"karan3391@gmail.com","firstName":"Karan","lastName":"Sehgal","countryCode":"US","profileImage":"","isActive":true,"accountId":"c9b3f7b7-853c-410e-8de1-333e40ed6a5e","containerName":"c-c9b3f7b7-853c-410e-8de1-333e40ed6a5e"}
+                        self.myProfileDictionary = self.convertToDictionary(text: responseString)!
+                        print(self.myProfileDictionary)
+                        print("My Profile Data")
+                    }
+                    
+                }
+            }
+        }
+        else
+        {
+        
+        }
+    }
  
     // MARK: - UISearchBarDelegate protocol
     
@@ -859,7 +890,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     }
     
     @objc func profileButtonAction(sender: UIButton!){
-        myProfileView = ProfileView(frame: CGRect(x: screenWidth, y: 0, width: 400, height: screenHeight), screenWidth: screenWidth, screenHeight: screenHeight)
+        myProfileView = ProfileView(frame: CGRect(x: screenWidth, y: 0, width: 400, height: screenHeight), screenWidth: screenWidth, screenHeight: screenHeight, withDictionary: self.myProfileDictionary)
         myProfileView.backgroundColor = .systemGray6
         myProfileView.delegate = self
         self.view.addSubview(myProfileView)
@@ -967,11 +998,13 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         self.newScanButton.setTitle("Create Project", for: .normal)
         self.projectTitle.text = "Organization Name | Projects"
         self.backButton.isHidden = true
+        self.mySearchBar.isHidden = false
     }
     
     func labelsSwitchToScansView(){
         self.newScanButton.setTitle("New Scan", for: .normal)
         self.backButton.isHidden = false
+        self.mySearchBar.isHidden = true
     }
     
 }//class ends
@@ -979,6 +1012,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
 // MARK: - LoginViewExtension
 extension LandingController: LoginViewDelegate {
     func sendSetupRequest(email: String, password: String) {
+        fetchProfile()
         fetchProjectsData()
     }
 }

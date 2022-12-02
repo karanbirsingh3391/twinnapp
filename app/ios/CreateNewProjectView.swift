@@ -140,7 +140,7 @@ class CreateNewProjectView: UIView, UITextFieldDelegate {
         customLabel.font = UIFont.preferredFont(forTextStyle: .footnote)
         customLabel.textColor = .systemGray
         //projectNameLabel.font = UIFont(name: "Roboto-Medium", size: 10)
-        var paragraphStyle = NSMutableParagraphStyle()
+        let paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.lineHeightMultiple = 0.83
         customLabel.text = labelText
         return customLabel
