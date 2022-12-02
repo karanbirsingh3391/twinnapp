@@ -212,8 +212,8 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         
     }
     
-    func createNewProjectView(withName: String, withProjectID: String, isEdit: Bool){
-        createNewProjectView = CreateNewProjectView(frame: CGRect(x: screenWidth, y: 0, width: 400, height: screenHeight), screenWidth: screenWidth, screenHeight: screenHeight, projectName: withName, projectID: withProjectID, isEdit:isEdit)
+    func createNewProjectView(withName: String, withProjectID: String, startDate:String, endDate:String, isEdit: Bool){
+        createNewProjectView = CreateNewProjectView(frame: CGRect(x: screenWidth, y: 0, width: 400, height: screenHeight), screenWidth: screenWidth, screenHeight: screenHeight, projectName: withName, projectID: withProjectID,startDate:startDate, endDate:endDate, isEdit:isEdit)
         createNewProjectView.backgroundColor = .systemGray6
         createNewProjectView.delegate = self
         self.view.addSubview(createNewProjectView)
@@ -403,7 +403,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
             self.addSpinner()
             
             let parameters: [String: Any] = [:]
-            APIHelper.shareInstance.apiCall(endpoint: "", parameters: parameters, method: "GET") { responseString, error in
+            APIHelper.shareInstance.apiCall(endpoint: "/project", parameters: parameters, method: "GET") { responseString, error in
                 //print(responseString)
                 
                 DispatchQueue.main.async {
@@ -419,7 +419,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                             //for i in 0...projects.count-1 {}
                                 for project in projects {
                                     if let name = project["projectName"] as? String {
-                                        self.myCollectionViewArray.append(["name": project["projectName"] as? String, "clientName":project["clientName"] as? String, "dateCreated":project["startDate"] as? String,
+                                        self.myCollectionViewArray.append(["name": project["projectName"] as? String, "clientName":project["clientName"] as? String, "dateCreated":project["startDate"] as? String, "endDate":project["endDate"] as? String,
                                             "status": "In Progress",
                                             "image": "ProjectSmapleImage.png",
                                             "projectId":project["projectId"] as? String])
@@ -441,10 +441,47 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         }
     }
     
-    func createNewProject(name:String, clientID: String, projectID: String){
+    func fetchClientsList(){
         isScansCollectionViewType = false
         if (isKeyPresentInUserDefaults(key: "access_token"))
         {
+            myCollectionViewArray.removeAll()
+            self.addSpinner()
+            
+            let parameters: [String: Any] = [:]
+            APIHelper.shareInstance.apiCall(endpoint: "/client", parameters: parameters, method: "GET") { responseString, error in
+                //print(responseString)
+                
+                DispatchQueue.main.async {
+                    self.removeSpinner()
+                    
+                    if(responseString == ""){
+                        self.showToast(message: "Something went wrong.", font: UIFont.preferredFont(forTextStyle: .body))
+                    }
+                    else{
+                        let dict = self.convertToDictionary(text: responseString)
+                
+                        if let projects = dict?["clients"] as? [[String: AnyObject]] {
+                            
+                        }
+                        
+                        self.setupScanListView()
+                    }
+                }
+            }
+        }
+        else
+        {
+            setupLoginView()
+            //self.showToast(message: "Your session has expired, please login again.", font: UIFont.preferredFont(forTextStyle: .body))
+        }
+    }
+    
+    func createNewProject(name:String, clientID: String, projectID: String, startDate: String, endDate: String){
+        isScansCollectionViewType = false
+        if (isKeyPresentInUserDefaults(key: "access_token"))
+        {
+            print(clientID)
             myCollectionViewArray.removeAll()
             UIView.animate(withDuration: 0.3, delay: 0.0, options: [], animations: {
                 self.createNewProjectView.frame = CGRect(x: self.screenWidth, y: 0, width: 400, height: self.screenHeight)
@@ -454,24 +491,26 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
             self.addSpinner()
             newScanButton.setTitle("", for: .normal)
             //"730381f5-c003-4206-86d8-a21a68fb2b72"
+            //730381f5-c003-4206-86d8-a21a68fb2b72
             let parameters: [String: Any] = [
                 "clientId": clientID,
                 "projectName": name,
                 "description": "",
-                "startDate": "2022-12-27",
-                "endDate": "",
+                "startDate": startDate,
+                "endDate": endDate,
                 "address": "",
                 "contactPoint": "",
                 "contact": "",
                 "projectType": "",
                 "projectImage": ""
             ]
-            APIHelper.shareInstance.apiCall(endpoint: "", parameters: parameters, method: "POST") { responseString, error in
+            APIHelper.shareInstance.apiCall(endpoint: "/project", parameters: parameters, method: "POST") { responseString, error in
                 DispatchQueue.main.async {
                     self.removeSpinner()
 
                     if(responseString == ""){
                         self.showToast(message: "Something went wrong.", font: UIFont.preferredFont(forTextStyle: .body))
+                        self.labelsSwitchToProjectsView()
                     }
                     else
                     {
@@ -497,7 +536,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         }
     }
     
-    func modifyProject(name:String, clientID: String, projectID: String){
+    func modifyProject(name:String, clientID: String, projectID: String, startDate: String, endDate: String){
         isScansCollectionViewType = false
         if (isKeyPresentInUserDefaults(key: "access_token"))
         {
@@ -515,15 +554,15 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                 "projectName": name,
                 "projectId":projectID,
                 "description": "",
-                "startDate": "2022-12-27",
-                "endDate": "",
+                "startDate": startDate,
+                "endDate": endDate,
                 "address": "",
                 "contactPoint": "",
                 "contact": "",
                 "projectType": "",
                 "projectImage": ""
             ]
-            APIHelper.shareInstance.apiCall(endpoint: "", parameters: parameters, method: "PUT") { responseString, error in
+            APIHelper.shareInstance.apiCall(endpoint: "/project", parameters: parameters, method: "PUT") { responseString, error in
                 DispatchQueue.main.async {
                     self.removeSpinner()
 
@@ -565,7 +604,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                 "projectId": projectID
             ]
             print(projectID)
-            APIHelper.shareInstance.apiCall(endpoint:"/"+projectID, parameters: parameters, method: "DELETE") { responseString, error in
+            APIHelper.shareInstance.apiCall(endpoint:"/project/"+projectID, parameters: parameters, method: "DELETE") { responseString, error in
                 DispatchQueue.main.async {
                     self.removeSpinner()
 
@@ -606,7 +645,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                 "projectId": projectID
             ]
             print(projectID)
-            APIHelper.shareInstance.apiCall(endpoint:"/duplicate/project", parameters: parameters, method: "POST") { responseString, error in
+            APIHelper.shareInstance.apiCall(endpoint:"/project/duplicate/project", parameters: parameters, method: "POST") { responseString, error in
                 DispatchQueue.main.async {
                     self.removeSpinner()
 
@@ -889,7 +928,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         }
         else
         {
-            self.createNewProjectView(withName: "", withProjectID: "", isEdit:false)
+            self.createNewProjectView(withName: "", withProjectID: "", startDate: "", endDate: "", isEdit:false)
         }
 
     }
@@ -962,7 +1001,9 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                 let editAction = UIAction(title: "Edit Project Name", image: UIImage(systemName: "square.and.pencil")) { _ in
                     let projectID = self.myCollectionViewArray[interaction.view!.tag]["projectId"] as? String
                     let projectName = self.myCollectionViewArray[interaction.view!.tag]["name"] as? String
-                    self.createNewProjectView(withName: projectName!, withProjectID: projectID!, isEdit: true)
+                    let startDate = self.myCollectionViewArray[interaction.view!.tag]["dateCreated"] as? String
+                    let endDate = self.myCollectionViewArray[interaction.view!.tag]["endDate"] as? String
+                    self.createNewProjectView(withName: projectName!, withProjectID: projectID!, startDate: startDate!, endDate: endDate!, isEdit: true)
                 }
                 
                 let copyLinkAction = UIAction(title: "Copy Link", image: UIImage(systemName: "square.and.arrow.up")) { _ in
@@ -1042,13 +1083,13 @@ extension LandingController: ProfileViewDelegate {
 
 // MARK: - CreateNewProjectViewExtension
 extension LandingController: CreateNewProjectViewDelegate {
-    func sendRequest(projectName: String, projectID: String, isEdit: Bool) {
+    func sendRequest(projectName: String, projectID: String, startDate:String, endDate:String, isEdit: Bool) {
         
         if(isEdit){
-            self.modifyProject(name: projectName, clientID: UserDefaults.standard.object(forKey: "clientId")! as! String, projectID: projectID)
+            self.modifyProject(name: projectName, clientID: UserDefaults.standard.object(forKey: "clientId")! as! String, projectID: projectID, startDate: startDate, endDate: endDate)
         }
         else{
-            self.createNewProject(name: projectName, clientID: UserDefaults.standard.object(forKey: "clientId")! as! String, projectID: projectID)
+            self.createNewProject(name: projectName, clientID: UserDefaults.standard.object(forKey: "clientId")! as! String, projectID: projectID, startDate: startDate, endDate: endDate)
         }
         
         

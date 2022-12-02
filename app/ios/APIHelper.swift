@@ -24,7 +24,7 @@ final public class APIHelper: NSObject {
     public static let shareInstance = APIHelper()
     
     private let baseURLAuth: String = "https://dev-crm-api.tooliqa.com/api/auth/api/v1"
-    private let baseURLCRM: String = "https://dev-crm-api.tooliqa.com/api/crm/api/v1/project"
+    private let baseURLCRM: String = "https://dev-crm-api.tooliqa.com/api/crm/api/v1"
     
     struct ResponseObject<T: Decodable>: Decodable {
         let form: T    // often the top level key is `data`, but in the case of https://httpbin.org, it echos the submission under the key `form`
@@ -137,11 +137,11 @@ final public class APIHelper: NSObject {
             }
         
             print(response.statusCode)
-//            guard (200 ... 299) ~= response.statusCode else {                    // check for http errors
-//                print("statusCode should be 2xx, but is \(response.statusCode)")
-//                completion("", nil)
-//                return
-//            }
+            guard (200 ... 299) ~= response.statusCode else {                    // check for http errors
+                print("statusCode should be 2xx, but is \(response.statusCode)")
+                completion("", nil)
+                return
+            }
                         
             do {
                 //let array = try JSONSerialization.jsonObject(with: data) as? [[String : Any]]

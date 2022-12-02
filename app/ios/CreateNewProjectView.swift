@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 
 protocol CreateNewProjectViewDelegate: class {
-    func sendRequest(projectName: String, projectID: String, isEdit:Bool)
+    func sendRequest(projectName: String, projectID: String, startDate:String, endDate:String, isEdit:Bool)
 }
 
 class CreateNewProjectView: UIView, UITextFieldDelegate {
@@ -28,7 +28,7 @@ class CreateNewProjectView: UIView, UITextFieldDelegate {
       super.init(coder: aDecoder)
     }
     
-    init(frame: CGRect, screenWidth: CGFloat, screenHeight: CGFloat, projectName: String, projectID: String, isEdit: Bool) {
+    init(frame: CGRect, screenWidth: CGFloat, screenHeight: CGFloat, projectName: String, projectID: String, startDate:String, endDate:String, isEdit: Bool) {
         super.init(frame: frame)
         //self.isUserInteractionEnabled = true
         
@@ -75,10 +75,9 @@ class CreateNewProjectView: UIView, UITextFieldDelegate {
         startDatePicker = UIDatePicker()
         startDatePicker.frame = CGRect(x: 25, y: 200, width: self.frame.width-50, height: 50)
         startDatePicker.timeZone = NSTimeZone.local
-        startDatePicker.date = Date()
         startDatePicker.datePickerMode = .date
         startDatePicker.backgroundColor = UIColor.clear
-        startDatePicker.addTarget(self, action: #selector(datePickerValueChanged(_:)), for: .valueChanged)
+        startDatePicker.addTarget(self, action: #selector(startDatePickerValueChanged(_:)), for: .valueChanged)
         self.addSubview(startDatePicker)
         
         let startDateLabel = self.createLabel(frame: CGRect(x: 0, y: 15, width: 150, height: 20), labelText: "Start Date")
@@ -87,10 +86,9 @@ class CreateNewProjectView: UIView, UITextFieldDelegate {
         endDatePicker = UIDatePicker()
         endDatePicker.frame = CGRect(x: 25, y: 260, width: self.frame.width-50, height: 50)
         endDatePicker.timeZone = NSTimeZone.local
-        endDatePicker.date = Date()+60*60*24*60
         endDatePicker.datePickerMode = .date
         endDatePicker.backgroundColor = UIColor.clear
-        endDatePicker.addTarget(self, action: #selector(datePickerValueChanged(_:)), for: .valueChanged)
+        endDatePicker.addTarget(self, action: #selector(endDatePickerValueChanged(_:)), for: .valueChanged)
         self.addSubview(endDatePicker)
         
         let endDateLabel = self.createLabel(frame: CGRect(x: 0, y: 15, width: 150, height: 20), labelText: "End Date")
@@ -126,11 +124,21 @@ class CreateNewProjectView: UIView, UITextFieldDelegate {
         createProjectButton.layer.addSublayer(l)
         self.addSubview(createProjectButton)
         
-        if(self.isEdit){
+        
+    
+        if(self.isEdit && !startDate.isEmpty && !endDate.isEmpty && startDate.count > 0 && endDate.count > 0){
             createProjectButton.setTitle("Update", for: .normal)
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            let editedStartdate = dateFormatter.date(from:startDate)!
+            let editedEnddate = dateFormatter.date(from:endDate)!
+            startDatePicker.date = editedStartdate
+            endDatePicker.date = editedEnddate
         }
         else{
             createProjectButton.setTitle("Create Project", for: .normal)
+            startDatePicker.date = Date()
+            endDatePicker.date = Date()+60*60*24*60
         }
     }
     
@@ -160,8 +168,15 @@ class CreateNewProjectView: UIView, UITextFieldDelegate {
     @objc func createProjectButtonAction(sender: UIButton!){
         print("create project button pressed")
         print(projectNameTextField.text!)
-        //self.delegate?.sendRequest(projectName: projectNameTextField.text!, projectID: self.projectID, isEdit: self.isEdit)
-        openDatePicker()
+        
+        let dateFormatter: DateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let startDate: String = dateFormatter.string(from: startDatePicker.date)
+        let endDate: String = dateFormatter.string(from: endDatePicker.date)
+        print(startDate)
+        print(endDate)
+        self.delegate?.sendRequest(projectName: projectNameTextField.text!, projectID: self.projectID, startDate:startDate, endDate:endDate, isEdit: self.isEdit)
+       
     }
     
     // MARK: - UITextField Delegate Functions
@@ -185,12 +200,22 @@ class CreateNewProjectView: UIView, UITextFieldDelegate {
         
     }
     
-    @objc func datePickerValueChanged(_ sender: UIDatePicker){
+    @objc func startDatePickerValueChanged(_ sender: UIDatePicker){
          
-         let dateFormatter: DateFormatter = DateFormatter()
-         dateFormatter.dateFormat = "MM/dd/yyyy hh:mm a"
-         let selectedDate: String = dateFormatter.string(from: sender.date)
-         print("Selected value \(selectedDate)")
+        let dateFormatter: DateFormatter = DateFormatter()
+        //dateFormatter.dateFormat = "MM/dd/yyyy hh:mm a"
+        dateFormatter.dateFormat = "dd-MM-yyyy"
+        let selectedDate: String = dateFormatter.string(from: sender.date)
+        print("Selected value \(selectedDate)")
+     }
+    
+    @objc func endDatePickerValueChanged(_ sender: UIDatePicker){
+         
+        let dateFormatter: DateFormatter = DateFormatter()
+        //dateFormatter.dateFormat = "MM/dd/yyyy hh:mm a"
+        dateFormatter.dateFormat = "dd-MM-yyyy"
+        let selectedDate: String = dateFormatter.string(from: sender.date)
+        print("Selected value \(selectedDate)")
      }
     
 }
