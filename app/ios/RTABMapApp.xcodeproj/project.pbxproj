@@ -151,6 +151,7 @@
 		4EFD0F62259E341C00575D88 /* RTABMapApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4EFD0F61259E341C00575D88 /* RTABMapApp.cpp */; };
 		4EFD0F67259E38DE00575D88 /* NativeWrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4EFD0F66259E38DE00575D88 /* NativeWrapper.cpp */; };
 		4EFD0F70259F847300575D88 /* background_renderer.cc in Sources */ = {isa = PBXBuildFile; fileRef = 4EFD0F6E259F847300575D88 /* background_renderer.cc */; };
+		A9334AF2293A4A020058EB99 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9334AF1293A4A020058EB99 /* ProfileView.swift */; };
 		A949C71D28E723C700836DEE /* Vector.png in Resources */ = {isa = PBXBuildFile; fileRef = A949C71C28E723C700836DEE /* Vector.png */; };
 		A949C7232921077F00836DEE /* SampleScan.png in Resources */ = {isa = PBXBuildFile; fileRef = A949C7222921077F00836DEE /* SampleScan.png */; };
 		A949C727292110C600836DEE /* ProfilePlaceholder.png in Resources */ = {isa = PBXBuildFile; fileRef = A949C726292110C600836DEE /* ProfilePlaceholder.png */; };
@@ -355,6 +356,7 @@
 		4EFD0F6E259F847300575D88 /* background_renderer.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = background_renderer.cc; path = ../android/jni/background_renderer.cc; sourceTree = "<group>"; };
 		4EFD0F6F259F847300575D88 /* background_renderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = background_renderer.h; path = ../android/jni/background_renderer.h; sourceTree = "<group>"; };
 		A90A7AA8292A67EC00745B96 /* RTABMapApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "RTABMapApp-Bridging-Header.h"; path = "../RTABMapApp-Bridging-Header.h"; sourceTree = "<group>"; };
+		A9334AF1293A4A020058EB99 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		A949C71C28E723C700836DEE /* Vector.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Vector.png; sourceTree = "<group>"; };
 		A949C7222921077F00836DEE /* SampleScan.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = SampleScan.png; sourceTree = "<group>"; };
 		A949C726292110C600836DEE /* ProfilePlaceholder.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ProfilePlaceholder.png; sourceTree = "<group>"; };
@@ -540,6 +542,7 @@
 				4E2C516625A63119005CEDBD /* VerticalScrollerView.swift */,
 				A9E5B814292AB6A400E1989D /* APIHelper.swift */,
 				A949C7322922888900836DEE /* LoginView.swift */,
+				A9334AF1293A4A020058EB99 /* ProfileView.swift */,
 				A9E5B818292EA7EC00E1989D /* CreateNewProjectView.swift */,
 				A949C7382923DFCC00836DEE /* ProjectsListCollectionView.swift */,
 				A9DC971128D8EF4D00FD987B /* LandingController.swift */,
@@ -907,6 +910,7 @@
 				4EFD0BBC259D509300575D88 /* point_cloud_drawable.cpp in Sources */,
 				4EFD0BA5259D501E00575D88 /* frustum.cpp in Sources */,
 				4EFD0B98259D501E00575D88 /* util.cpp in Sources */,
+				A9334AF2293A4A020058EB99 /* ProfileView.swift in Sources */,
 				4EFD0BA1259D501E00575D88 /* trace.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

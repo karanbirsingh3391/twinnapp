@@ -16,6 +16,9 @@ class CreateNewProjectView: UIView, UITextFieldDelegate {
     
     public var delegate: CreateNewProjectViewDelegate!
     public var projectNameTextField: UITextField!
+    public var clientNameTextField: UITextField!
+    public var startDatePicker: UIDatePicker!
+    public var endDatePicker: UIDatePicker!
     public var projectID: String!
     public var isEdit: Bool!
     private var myCancelButton: UIButton!
@@ -32,17 +35,15 @@ class CreateNewProjectView: UIView, UITextFieldDelegate {
         self.projectID = projectID
         self.isEdit = isEdit
         
-        let projectNameLabel = UILabel(frame: CGRect(x: 25, y: 50, width: 150, height: 21))
-        projectNameLabel.textAlignment = .left
-        projectNameLabel.font = UIFont.preferredFont(forTextStyle: .footnote)
-        projectNameLabel.textColor = .systemGray
-        //projectNameLabel.font = UIFont(name: "Roboto-Medium", size: 10)
-        var paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.lineHeightMultiple = 0.83
-        projectNameLabel.text = "Project Name"
-        self.addSubview(projectNameLabel)
+        let locale = Locale.current
+        print(locale.description)
+        print(locale.regionCode!)
         
-        projectNameTextField = UITextField(frame: CGRect(x: 25, y: 80, width: 350, height: 40))
+      
+        let projectnameLabel = self.createLabel(frame: CGRect(x: 25, y: 50, width: 150, height: 20), labelText: "Project Name")
+        self.addSubview(projectnameLabel)
+        
+        projectNameTextField = UITextField(frame: CGRect(x: 25, y: 75, width: self.frame.width-50, height: 40))
         projectNameTextField.placeholder = "Enter Project Name"
         projectNameTextField.text = projectName
         projectNameTextField.font = UIFont.systemFont(ofSize: 15)
@@ -54,6 +55,46 @@ class CreateNewProjectView: UIView, UITextFieldDelegate {
         projectNameTextField.contentVerticalAlignment = UIControl.ContentVerticalAlignment.center
         projectNameTextField.delegate = self
         self.addSubview(projectNameTextField)
+        
+        let clientnameLabel = self.createLabel(frame: CGRect(x: 25, y: 125, width: 150, height: 20), labelText: "Client Name")
+        self.addSubview(clientnameLabel)
+        
+        clientNameTextField = UITextField(frame: CGRect(x: 25, y: 150, width: self.frame.width-100, height: 40))
+        clientNameTextField.placeholder = "Enter Client Name"
+        clientNameTextField.text = projectName
+        clientNameTextField.font = UIFont.systemFont(ofSize: 15)
+        clientNameTextField.borderStyle = UITextField.BorderStyle.roundedRect
+        clientNameTextField.autocorrectionType = UITextAutocorrectionType.no
+        clientNameTextField.keyboardType = UIKeyboardType.default
+        clientNameTextField.returnKeyType = UIReturnKeyType.done
+        clientNameTextField.clearButtonMode = UITextField.ViewMode.whileEditing
+        clientNameTextField.contentVerticalAlignment = UIControl.ContentVerticalAlignment.center
+        clientNameTextField.delegate = self
+        self.addSubview(clientNameTextField)
+        
+        startDatePicker = UIDatePicker()
+        startDatePicker.frame = CGRect(x: 25, y: 200, width: self.frame.width-50, height: 50)
+        startDatePicker.timeZone = NSTimeZone.local
+        startDatePicker.date = Date()
+        startDatePicker.datePickerMode = .date
+        startDatePicker.backgroundColor = UIColor.clear
+        startDatePicker.addTarget(self, action: #selector(datePickerValueChanged(_:)), for: .valueChanged)
+        self.addSubview(startDatePicker)
+        
+        let startDateLabel = self.createLabel(frame: CGRect(x: 0, y: 15, width: 150, height: 20), labelText: "Start Date")
+        startDatePicker.addSubview(startDateLabel)
+        
+        endDatePicker = UIDatePicker()
+        endDatePicker.frame = CGRect(x: 25, y: 260, width: self.frame.width-50, height: 50)
+        endDatePicker.timeZone = NSTimeZone.local
+        endDatePicker.date = Date()+60*60*24*60
+        endDatePicker.datePickerMode = .date
+        endDatePicker.backgroundColor = UIColor.clear
+        endDatePicker.addTarget(self, action: #selector(datePickerValueChanged(_:)), for: .valueChanged)
+        self.addSubview(endDatePicker)
+        
+        let endDateLabel = self.createLabel(frame: CGRect(x: 0, y: 15, width: 150, height: 20), labelText: "End Date")
+        endDatePicker.addSubview(endDateLabel)
         
         myCancelButton = UIButton(frame: CGRect(x: 10, y: screenHeight-62, width: 146, height: 52))
         myCancelButton.backgroundColor = .clear
@@ -91,10 +132,21 @@ class CreateNewProjectView: UIView, UITextFieldDelegate {
         else{
             createProjectButton.setTitle("Create Project", for: .normal)
         }
-        
-        
     }
     
+    func createLabel(frame: CGRect, labelText: String) -> UILabel{
+        let customLabel = UILabel(frame: frame)
+        customLabel.textAlignment = .left
+        customLabel.font = UIFont.preferredFont(forTextStyle: .footnote)
+        customLabel.textColor = .systemGray
+        //projectNameLabel.font = UIFont(name: "Roboto-Medium", size: 10)
+        var paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineHeightMultiple = 0.83
+        customLabel.text = labelText
+        return customLabel
+    }
+    
+    // MARK: - Button Actions
     @objc func cancelButtonAction(sender: UIButton!){
         print("cancel button pressed ")
         UIView.animate(withDuration: 0.3, delay: 0.0, options: [], animations: {
@@ -108,10 +160,11 @@ class CreateNewProjectView: UIView, UITextFieldDelegate {
     @objc func createProjectButtonAction(sender: UIButton!){
         print("create project button pressed")
         print(projectNameTextField.text!)
-        self.delegate?.sendRequest(projectName: projectNameTextField.text!, projectID: self.projectID, isEdit: self.isEdit)
+        //self.delegate?.sendRequest(projectName: projectNameTextField.text!, projectID: self.projectID, isEdit: self.isEdit)
+        openDatePicker()
     }
     
-    
+    // MARK: - UITextField Delegate Functions
     func textFieldDidBeginEditing(_ textField: UITextField){
         print("begin editing")
         UIView.animate(withDuration: 0.5) {
@@ -127,4 +180,18 @@ class CreateNewProjectView: UIView, UITextFieldDelegate {
         
     }
     
+    // MARK: - UIDatePicker Functions
+    func openDatePicker(){
+        
+    }
+    
+    @objc func datePickerValueChanged(_ sender: UIDatePicker){
+         
+         let dateFormatter: DateFormatter = DateFormatter()
+         dateFormatter.dateFormat = "MM/dd/yyyy hh:mm a"
+         let selectedDate: String = dateFormatter.string(from: sender.date)
+         print("Selected value \(selectedDate)")
+     }
+    
 }
+

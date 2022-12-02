@@ -41,6 +41,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     private var isScansCollectionViewType:Bool!
     public var spinnerView: UIActivityIndicatorView!
     public var createNewProjectView: CreateNewProjectView!
+    public var myProfileView: ProfileView!
     //private var loginView = UIView()
     
 
@@ -154,7 +155,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         //profileButton.backgroundColor = .systemGreen
         profileButton.setImage(UIImage(named: "ProfilePlaceholder"), for: .normal)
         profileButton.setImage(UIImage(named: "ProfilePlaceholder"), for: .highlighted)
-        profileButton.addTarget(self, action: #selector(backButtonAction), for: .touchUpInside)
+        profileButton.addTarget(self, action: #selector(profileButtonAction), for: .touchUpInside)
         menuView.addSubview(profileButton)
         
         helpButton.frame = CGRect(x: 27, y: screenHeight-60, width: 25, height: 25)
@@ -190,7 +191,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     
     func setupScanListView(){
         let layout:UICollectionViewFlowLayout = UICollectionViewFlowLayout.init()
-        myCollectionView = ProjectsListCollectionView(frame: CGRect(x: 122, y: 120, width: UIScreen.main.bounds.width-132, height: UIScreen.main.bounds.height-120), collectionViewLayout: layout)
+        myCollectionView = ProjectsListCollectionView(frame: CGRect(x: 100, y: 110, width: UIScreen.main.bounds.width-110, height: UIScreen.main.bounds.height-110), collectionViewLayout: layout)
         //myCollectionView = ProjectsListCollectionView(frame: CGRect(x: 122, y: 148, width: UIScreen.main.bounds.width-132, height: UIScreen.main.bounds.height-200))
         //myCollectionView.setCollectionViewLayout(layout, animated: true)
         layout.scrollDirection = UICollectionView.ScrollDirection.vertical
@@ -857,6 +858,21 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         })
     }
     
+    @objc func profileButtonAction(sender: UIButton!){
+        myProfileView = ProfileView(frame: CGRect(x: screenWidth, y: 0, width: 400, height: screenHeight), screenWidth: screenWidth, screenHeight: screenHeight)
+        myProfileView.backgroundColor = .systemGray6
+        myProfileView.delegate = self
+        self.view.addSubview(myProfileView)
+        //self.view.bringSubviewToFront(newScanButton)
+        //
+        UIView.animate(withDuration: 0.3, delay: 0.0, options: [], animations: {
+            self.myProfileView.frame = CGRect(x: self.screenWidth-400, y: 0, width: 400, height: self.screenHeight)
+
+        }, completion: { (finished: Bool) in
+
+        })
+    }
+    
     @objc func logoutButtonAction(sender: UIButton!){
         isScansCollectionViewType = false
         UIView.animate(withDuration: 1.0, delay: 0.0, options: [], animations: {
@@ -964,6 +980,13 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
 extension LandingController: LoginViewDelegate {
     func sendSetupRequest(email: String, password: String) {
         fetchProjectsData()
+    }
+}
+
+// MARK: - LoginViewExtension
+extension LandingController: ProfileViewDelegate {
+    func sendLogoutRequest(email: String, password: String) {
+        logoutButtonAction(sender: nil)
     }
 }
 
