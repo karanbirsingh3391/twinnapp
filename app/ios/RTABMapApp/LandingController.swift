@@ -38,6 +38,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     private var myCollectionView:UICollectionView!
     //private var myCollectionViewArray = [String]()
     private var myCollectionViewArray: [[String: Any]] = []
+    private var myOriginalArray: [[String: Any]] = []
     private var isScansCollectionViewType:Bool!
     public var spinnerView: UIActivityIndicatorView!
     public var createNewProjectView: CreateNewProjectView!
@@ -413,14 +414,11 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                     }
                     else{
                         let dict = self.convertToDictionary(text: responseString)
-                        
-                        var myArray = [String]()
                 
                         if let projects = dict?["projects"] as? [[String: AnyObject]] {
                             //for i in 0...projects.count-1 {}
                                 for project in projects {
                                     if let name = project["projectName"] as? String {
-                                        myArray.append(name)
                                         self.myCollectionViewArray.append(["name": project["projectName"] as? String, "clientName":project["clientName"] as? String, "dateCreated":project["startDate"] as? String,
                                             "status": "In Progress",
                                             "image": "ProjectSmapleImage.png",
@@ -428,6 +426,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                                         UserDefaults.standard.setValue(project["clientId"] as! String, forKey: "clientId")
                                     }
                                 }
+                            self.myOriginalArray = self.myCollectionViewArray
                         }
                         
                         self.setupScanListView()
@@ -667,19 +666,36 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     }
  
     // MARK: - UISearchBarDelegate protocol
+    func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
+        print("searchBarTextDidBeginEditing")
+    }
+    
+    func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
+        print("searchBarTextDidEndEditing")
+    }
     
     func searchBar(_ searchBar: UISearchBar, textDidChange textSearched: String) {
         print(textSearched)
+        self.myCollectionViewArray = self.myOriginalArray
         
-//        let itemsArray = ["Google", "Goodbye", "Go", "Hello"]
-//        let searchToSearch = "go"
-//
-//        let filtered = myCollectionViewArray.filter { $0.contains("Go") }
-//        let filtered = itemsArray.filter { String in
-//            return String.count>4
-//        }
-//        print(filtered)
+        if(!textSearched.isEmpty){
+            var myArray = [[String:Any]]()
+            for i in 0...self.myCollectionViewArray.count-1{
+                let val = self.myCollectionViewArray[i]["name"] as? String
+                var result = val?.lowercased().contains(textSearched)
+                if(result!){
+                    myArray.append(self.myCollectionViewArray[i])
+                }
+            }
+            self.myCollectionViewArray = myArray
+            
+        }
+        self.myCollectionView.removeFromSuperview()
+        setupScanListView()
+
     }
+    
+
     
     // MARK: - UICollectionViewDataSource protocol
     
