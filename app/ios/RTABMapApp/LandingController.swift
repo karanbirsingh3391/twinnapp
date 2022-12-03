@@ -710,6 +710,15 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                     }
                     else
                     {
+                        let dict = self.convertToDictionary(text: responseString)
+                        print(responseString)
+                        let clientName = dict?["clientName"] as? String
+                        let clientID = dict?["clientId"] as? String
+                        
+                        self.createNewProjectView.projectListArray.append(
+                            ["clientName":clientName!,
+                             "clientId":clientID!])
+                        
                         self.showToast(message: "Client created successfully", font: UIFont.preferredFont(forTextStyle: .body))
 
                         UIView.animate(withDuration: 1.0, delay: 0.0, options: [], animations: {
