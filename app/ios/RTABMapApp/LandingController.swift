@@ -218,12 +218,12 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         createNewProjectView.delegate = self
         self.view.addSubview(createNewProjectView)
         //self.view.bringSubviewToFront(newScanButton)
-        //
+        self.fetchClientsList()
         UIView.animate(withDuration: 0.3, delay: 0.0, options: [], animations: {
             self.createNewProjectView.frame = CGRect(x: self.screenWidth-400, y: 0, width: 400, height: self.screenHeight)
 
         }, completion: { (finished: Bool) in
-
+            
         })
     }
     
@@ -418,12 +418,16 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                         if let projects = dict?["projects"] as? [[String: AnyObject]] {
                             //for i in 0...projects.count-1 {}
                                 for project in projects {
-                                    if let name = project["projectName"] as? String {
-                                        self.myCollectionViewArray.append(["name": project["projectName"] as? String, "clientName":project["clientName"] as? String, "dateCreated":project["startDate"] as? String, "endDate":project["endDate"] as? String,
+                                    if project["projectName"] is String {
+                                        self.myCollectionViewArray.append([
+                                            "name": project["projectName"]!,
+                                            "clientName":project["clientName"]!,
+                                            "dateCreated":project["startDate"]!,
+                                            "endDate":project["endDate"]!,
                                             "status": "In Progress",
                                             "image": "ProjectSmapleImage.png",
-                                            "projectId":project["projectId"] as? String])
-                                        UserDefaults.standard.setValue(project["clientId"] as! String, forKey: "clientId")
+                                            "projectId":project["projectId"]!])
+                                        UserDefaults.standard.setValue(project["clientId"]!, forKey: "clientId")
                                     }
                                 }
                             self.myOriginalArray = self.myCollectionViewArray
@@ -445,34 +449,36 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         isScansCollectionViewType = false
         if (isKeyPresentInUserDefaults(key: "access_token"))
         {
-            myCollectionViewArray.removeAll()
-            self.addSpinner()
+            self.createNewProjectView.addSpinner()
             
             let parameters: [String: Any] = [:]
             APIHelper.shareInstance.apiCall(endpoint: "/client", parameters: parameters, method: "GET") { responseString, error in
                 //print(responseString)
                 
                 DispatchQueue.main.async {
-                    self.removeSpinner()
+                    self.createNewProjectView.removeSpinner()
                     
                     if(responseString == ""){
                         self.showToast(message: "Something went wrong.", font: UIFont.preferredFont(forTextStyle: .body))
                     }
                     else{
                         let dict = self.convertToDictionary(text: responseString)
-                
-                        if let projects = dict?["clients"] as? [[String: AnyObject]] {
-                            
+                        print(responseString)
+                        if let clients = dict?["clients"] as? [[String: AnyObject]] {
+                            for client in clients{
+                                self.createNewProjectView.projectListArray.append(
+                                    ["clientName":client["clientName"]!,
+                                     "clientId":client["clientId"]!])
+                            }
                         }
-                        
-                        self.setupScanListView()
+                        print(self.createNewProjectView.projectListArray)
                     }
                 }
             }
         }
         else
         {
-            setupLoginView()
+            
             //self.showToast(message: "Your session has expired, please login again.", font: UIFont.preferredFont(forTextStyle: .body))
         }
     }
@@ -662,6 +668,54 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                         }, completion: { (finished: Bool) in
                             self.fetchProjectsData()
                             self.labelsSwitchToProjectsView()
+                        })
+                        
+                    }
+                    
+                }
+            }
+        }
+        else
+        {
+            setupLoginView()
+            self.showToast(message: "Your session has expired, please login again.", font: UIFont.preferredFont(forTextStyle: .body))
+        }
+    }
+    
+    func addNewClient(clientName:String){
+        isScansCollectionViewType = false
+        if (isKeyPresentInUserDefaults(key: "access_token"))
+        {
+            
+            self.createNewProjectView.addSpinner()
+            var dataArray: [[String:Any]] = []
+            let dataDictionary: [String:Any] = ["addressId": "","addressLine1": "","addressLine2": "","city": "","state": "","country": "","pincode": "","clientId": "","address_type_id": 1]
+            dataArray.append(dataDictionary)
+            
+            let parameters: [String: Any] = [
+                "clientName": clientName,
+                "email": "",
+                 "contactNumber": "",
+                 "about": "",
+                 "logoImage": "",
+                 "addresses": dataArray
+            ]
+            
+            APIHelper.shareInstance.apiCall(endpoint:"/client", parameters: parameters, method: "POST") { responseString, error in
+                DispatchQueue.main.async {
+                    self.createNewProjectView.removeSpinner()
+
+                    if(responseString == ""){
+                        self.showToast(message: "Something went wrong.", font: UIFont.preferredFont(forTextStyle: .body))
+                    }
+                    else
+                    {
+                        self.showToast(message: "Client created successfully", font: UIFont.preferredFont(forTextStyle: .body))
+
+                        UIView.animate(withDuration: 1.0, delay: 0.0, options: [], animations: {
+                            
+                        }, completion: { (finished: Bool) in
+                            
                         })
                         
                     }
@@ -899,10 +953,11 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
             
             self.updateDatabases()
             self.myCollectionView.removeFromSuperview()
-            UIView.animate(withDuration: 1.0, delay: 1.0, options: [], animations: {
-                self.setupScanListView()
-            }, completion: { (finished: Bool) in
-            })
+            self.setupScanListView()
+//            UIView.animate(withDuration: 1.0, delay: 1.0, options: [], animations: {
+//
+//            }, completion: { (finished: Bool) in
+//            })
         }
     }
     
@@ -1091,7 +1146,10 @@ extension LandingController: CreateNewProjectViewDelegate {
         else{
             self.createNewProject(name: projectName, clientID: UserDefaults.standard.object(forKey: "clientId")! as! String, projectID: projectID, startDate: startDate, endDate: endDate)
         }
-        
-        
     }
+    
+    func createNewClient(clientName:String){
+        addNewClient(clientName: clientName)
+    }
+    
 }

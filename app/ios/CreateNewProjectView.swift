@@ -8,21 +8,27 @@
 import Foundation
 import UIKit
 
-protocol CreateNewProjectViewDelegate: class {
+protocol CreateNewProjectViewDelegate: AnyObject {
     func sendRequest(projectName: String, projectID: String, startDate:String, endDate:String, isEdit:Bool)
+    func createNewClient(clientName:String)
 }
 
-class CreateNewProjectView: UIView, UITextFieldDelegate {
+class CreateNewProjectView: UIView, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource {
     
+    let reuseIdentifier = "cell"
     public var delegate: CreateNewProjectViewDelegate!
     public var projectNameTextField: UITextField!
     public var clientNameTextField: UITextField!
+    private var addClientButton: UIButton!
     public var startDatePicker: UIDatePicker!
     public var endDatePicker: UIDatePicker!
     public var projectID: String!
     public var isEdit: Bool!
     private var myCancelButton: UIButton!
     private var createProjectButton: UIButton!
+    public var projectListTableView: UITableView!
+    public var projectListArray: [[String: Any]] = []
+    private var spinnerView: UIActivityIndicatorView!
     
     required init?(coder aDecoder: NSCoder) {
       super.init(coder: aDecoder)
@@ -70,7 +76,22 @@ class CreateNewProjectView: UIView, UITextFieldDelegate {
         clientNameTextField.clearButtonMode = UITextField.ViewMode.whileEditing
         clientNameTextField.contentVerticalAlignment = UIControl.ContentVerticalAlignment.center
         clientNameTextField.delegate = self
+        clientNameTextField.tag = 2
         self.addSubview(clientNameTextField)
+        
+        addClientButton = UIButton(frame: CGRect(x: self.frame.width-60, y: 150, width: 40, height: 40))
+        addClientButton.backgroundColor = .clear
+        addClientButton.addTarget(self, action: #selector(addClientButtonAction), for: .touchUpInside)
+        let layer = CAGradientLayer()
+        layer.frame = addClientButton.bounds
+        layer.colors = [UIColor(red: 62.0/255.0, green: 121/255.0, blue: 229.0/255.0, alpha: 1.0).cgColor, UIColor(red: 1.0/255.0, green: 184.0/255.0, blue: 227.0/255.0, alpha: 1.0).cgColor]
+        layer.startPoint = CGPoint(x: 0, y: 0.5)
+        layer.endPoint = CGPoint(x: 1, y: 0.5)
+        layer.cornerRadius = 5
+        addClientButton.layer.addSublayer(layer)
+        //addClientButton.setTitle("+", for: .normal)
+        self.addSubview(addClientButton)
+        
         
         startDatePicker = UIDatePicker()
         startDatePicker.frame = CGRect(x: 25, y: 200, width: self.frame.width-50, height: 50)
@@ -96,17 +117,9 @@ class CreateNewProjectView: UIView, UITextFieldDelegate {
         
         myCancelButton = UIButton(frame: CGRect(x: 10, y: screenHeight-62, width: 146, height: 52))
         myCancelButton.backgroundColor = .clear
-        //myCancelButton.isUserInteractionEnabled = true
         myCancelButton.setTitle("Cancel", for: .normal)
         myCancelButton.setTitleColor(UIColor(red: 0.259, green: 0.522, blue: 0.957, alpha: 1), for: .normal)
         myCancelButton.addTarget(self, action: #selector(cancelButtonAction), for: .touchUpInside)
-//        let l = CAGradientLayer()
-//        l.frame = myCancelButton.bounds
-//        l.colors = [UIColor(red: 62.0/255.0, green: 121/255.0, blue: 229.0/255.0, alpha: 1.0).cgColor, UIColor(red: 1.0/255.0, green: 184.0/255.0, blue: 227.0/255.0, alpha: 1.0).cgColor]
-//        l.startPoint = CGPoint(x: 0, y: 0.5)
-//        l.endPoint = CGPoint(x: 1, y: 0.5)
-//        l.cornerRadius = 10
-//        myCancelButton.layer.addSublayer(l)
         self.addSubview(myCancelButton)
         
         createProjectButton = UIButton(frame: CGRect(x: self.frame.width-156, y: screenHeight-62, width: 146, height: 52))
@@ -140,6 +153,8 @@ class CreateNewProjectView: UIView, UITextFieldDelegate {
             startDatePicker.date = Date()
             endDatePicker.date = Date()+60*60*24*60
         }
+        
+       
     }
     
     func createLabel(frame: CGRect, labelText: String) -> UILabel{
@@ -179,20 +194,37 @@ class CreateNewProjectView: UIView, UITextFieldDelegate {
        
     }
     
+    @objc func addClientButtonAction(sender: UIButton!){
+        print("add client button pressed")
+        projectListTableView.removeFromSuperview()
+        self.delegate?.createNewClient(clientName: clientNameTextField.text!)
+    }
+    
     // MARK: - UITextField Delegate Functions
     func textFieldDidBeginEditing(_ textField: UITextField){
         print("begin editing")
-        UIView.animate(withDuration: 0.5) {
-            
+        if(textField.tag == 2){
+            projectListTableView = UITableView(frame: CGRect(x: 25, y: 190, width: self.frame.width-100, height: 140))
+            projectListTableView.backgroundColor = .clear
+            projectListTableView.delegate = self
+            projectListTableView.dataSource = self
+            projectListTableView.register(UITableViewCell.self, forCellReuseIdentifier: reuseIdentifier)
+            self.addSubview(projectListTableView)
         }
+        
     }
     
     func textFieldDidEndEditing(_ textField: UITextField){
         print("end editing")
-        UIView.animate(withDuration: 0.5) {
-            
+        if(textField.tag == 2){
+            projectListTableView.removeFromSuperview()
         }
         
+        
+    }
+    
+    func textFieldDidChangeSelection(_ textField: UITextField) {
+        print("end editing")
     }
     
     // MARK: - UIDatePicker Functions
@@ -217,6 +249,50 @@ class CreateNewProjectView: UIView, UITextFieldDelegate {
         let selectedDate: String = dateFormatter.string(from: sender.date)
         print("Selected value \(selectedDate)")
      }
+    
+    
+    // MARK: - UItableView Functions
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        projectListArray.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath)
+        var content = cell.defaultContentConfiguration()
+
+        // Configure content.
+        content.image = UIImage(systemName: "star")
+        content.text = self.projectListArray[indexPath.row]["clientName"] as? String
+        // Customize appearance.
+        content.imageProperties.tintColor = .blue
+
+        cell.contentConfiguration = content
+        return cell
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        clientNameTextField.text = self.projectListArray[indexPath.row]["clientName"] as? String
+        clientNameTextField.resignFirstResponder()
+        projectListTableView.removeFromSuperview()
+    }
+    
+    // MARK: - Activity Spinner Functions
+    func addSpinner(){
+        spinnerView = UIActivityIndicatorView(style: .medium)
+        spinnerView.color = .white
+        spinnerView.center = addClientButton.center
+        addClientButton.addSubview(spinnerView)
+        spinnerView.startAnimating()
+        addClientButton.setTitle("", for: .normal)
+        self.isUserInteractionEnabled = false
+    }
+    
+    func removeSpinner(){
+        self.spinnerView.stopAnimating()
+        self.spinnerView.removeFromSuperview()
+        addClientButton.setTitle("+", for: .normal)
+        self.isUserInteractionEnabled = true
+    }
     
 }
 
