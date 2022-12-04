@@ -94,7 +94,9 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         projectTitle.font = UIFont(name: "Inter-Medium", size: 20)
         //var paragraphStyle = NSMutableParagraphStyle()
         //paragraphStyle.lineHeightMultiple = 0.83
-        projectTitle.text = "Organization Name | Projects"
+        //projectTitle.text = "Projects"
+        projectTitle.attributedText = NSMutableAttributedString().normal("Projects")
+        projectTitle.isUserInteractionEnabled = true
         self.view.addSubview(projectTitle)
         
         mySearchBar.frame = CGRect(x:screenWidth-320, y:36 , width:300, height: 44)
@@ -164,14 +166,14 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         helpButton.frame = CGRect(x: 27, y: screenHeight-60, width: 25, height: 25)
         //profileButton.backgroundColor = .systemGreen
         helpButton.setImage(UIImage(named: "HelpIcon"), for: .normal)
-        helpButton.setImage(UIImage(named: "HelpIcon"), for: .highlighted)
+        //helpButton.setImage(UIImage(named: "HelpIcon"), for: .highlighted)
         helpButton.addTarget(self, action: #selector(logoutButtonAction), for: .touchUpInside)
         //menuView.addSubview(helpButton)
-        
-        backButton.frame = CGRect(x: 100, y: 50, width: 20, height: 20)
-        //profileButton.backgroundColor = .systemGreen
-        backButton.setImage(UIImage(named: "BackButton"), for: .normal)
-        backButton.setImage(UIImage(named: "BackButton"), for: .highlighted)
+
+        backButton.frame = CGRect(x: 100, y: 50, width: 30, height: 30)
+        //backButton.backgroundColor = .systemGreen
+        backButton.setImage(UIImage(systemName: "arrowshape.left.fill"), for: .normal)
+        //backButton.setImage(UIImage(named: "BackButton"), for: .highlighted)
         backButton.addTarget(self, action: #selector(backButtonAction), for: .touchUpInside)
         self.view.addSubview(backButton)
         backButton.isHidden = true
@@ -201,7 +203,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         //layout.sectionInset = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
         //layout.itemSize = CGSize(width: 200, height: 280)
         //layout.minimumLineSpacing = 50
-        layout.minimumInteritemSpacing = 10
+        //layout.minimumInteritemSpacing = 10
         
         myCollectionView.delegate = self
         myCollectionView.dataSource = self
@@ -210,6 +212,8 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         //myCollectionView.register(ScanCell.self, forCellWithReuseIdentifier: reuseIdentifier)
         self.view.addSubview(myCollectionView)
         self.view.bringSubviewToFront(newScanButton)
+        self.view.bringSubviewToFront(projectTitle)
+        self.view.bringSubviewToFront(backButton)
         
     }
     
@@ -218,12 +222,12 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         createNewProjectView.delegate = self
         self.view.addSubview(createNewProjectView)
         //self.view.bringSubviewToFront(newScanButton)
-        self.fetchClientsList()
+        
         UIView.animate(withDuration: 0.3, delay: 0.0, options: [], animations: {
             self.createNewProjectView.frame = CGRect(x: self.screenWidth-400, y: 0, width: 400, height: self.screenHeight)
 
         }, completion: { (finished: Bool) in
-            
+            self.fetchClientsList()
         })
     }
     
@@ -231,8 +235,6 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     func isKeyPresentInUserDefaults(key: String) -> Bool {
         return UserDefaults.standard.object(forKey: key) != nil
     }
-    
-    
     
     func updateDatabases()
     {
@@ -689,7 +691,6 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         isScansCollectionViewType = false
         if (isKeyPresentInUserDefaults(key: "access_token"))
         {
-            
             self.createNewProjectView.addSpinner()
             var dataArray: [[String:Any]] = []
             let dataDictionary: [String:Any] = ["addressId": "","addressLine1": "","addressLine2": "","city": "","state": "","country": "","pincode": "","clientId": "","address_type_id": 1]
@@ -869,7 +870,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                 self.showToast(message: "Project ID copied to clipboard.", font: UIFont.preferredFont(forTextStyle: .body))
             }
             
-            let duplicateAction = UIAction(title: "Duplicate", image: UIImage(systemName: "square.and.arrow.up")) { _ in
+            let duplicateAction = UIAction(title: "Duplicate", image: UIImage(systemName: "square.and.arrow.down.on.square")) { _ in
                 let projectID = self.myCollectionViewArray[interaction.view!.tag]["projectId"] as? String
                 self.duplicateProject(projectID: projectID!)
             }
@@ -983,6 +984,10 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
       return 50
     }
     
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
+           return UIEdgeInsets(top: 25, left: 15, bottom: 0, right: 5)
+        }
+    
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
         return 0
     }
@@ -1007,7 +1012,15 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         {
             isScansCollectionViewType = true
             let  projectName = self.myCollectionViewArray[indexPath.row]["name"] as? String
-            projectTitle.text = "Organization Name | Projects | "+projectName!
+            
+            projectTitle.attributedText =
+                NSMutableAttributedString()
+                    .underlined("Projects")
+                    .normal(" | ")
+                    .bold(projectName!)
+            let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
+            projectTitle.addGestureRecognizer(tapGesture)
+                
             self.labelsSwitchToScansView()
             
             self.updateDatabases()
@@ -1048,6 +1061,17 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     }
     
     @objc func backButtonAction(sender: UIButton!){
+        isScansCollectionViewType = false
+        UIView.animate(withDuration: 1.0, delay: 0.0, options: [], animations: {
+            self.myCollectionViewArray.removeAll()
+            self.myCollectionView.removeFromSuperview()
+        }, completion: { (finished: Bool) in
+            self.fetchProjectsData()
+            self.labelsSwitchToProjectsView()
+        })
+    }
+    
+    @objc func handleTap(_ gestureRecognize: UITapGestureRecognizer) {
         isScansCollectionViewType = false
         UIView.animate(withDuration: 1.0, delay: 0.0, options: [], animations: {
             self.myCollectionViewArray.removeAll()
@@ -1136,7 +1160,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                     self.showToast(message: "Project ID copied to clipboard.", font: UIFont.preferredFont(forTextStyle: .body))
                 }
                 
-                let duplicateAction = UIAction(title: "Duplicate", image: UIImage(systemName: "square.and.arrow.up")) { _ in
+                let duplicateAction = UIAction(title: "Duplicate", image: UIImage(systemName: "square.and.arrow.down.on.square")) { _ in
                     let projectID = self.myCollectionViewArray[interaction.view!.tag]["projectId"] as? String
                     self.duplicateProject(projectID: projectID!)
                 }
@@ -1171,7 +1195,8 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     // MARK: - Switch Labels
     func labelsSwitchToProjectsView(){
         self.newScanButton.setTitle("Create Project", for: .normal)
-        self.projectTitle.text = "Organization Name | Projects"
+        //self.projectTitle.text = "Projects"
+        self.projectTitle.attributedText = NSMutableAttributedString().normal("Projects")
         self.backButton.isHidden = true
         self.mySearchBar.isHidden = false
     }
@@ -1223,4 +1248,68 @@ extension LandingController: CreateNewProjectViewDelegate {
         showToast(message: message, font: UIFont.preferredFont(forTextStyle: .body))
     }
     
+}
+
+// MARK: - NSMutableAttributedStringExtension
+extension NSMutableAttributedString {
+    var fontSize:CGFloat { return 20 }
+    var boldFont:UIFont { return UIFont(name: "AvenirNext-Bold", size: fontSize) ?? UIFont.boldSystemFont(ofSize: fontSize) }
+    var normalFont:UIFont { return UIFont(name: "AvenirNext-Regular", size: fontSize) ?? UIFont.systemFont(ofSize: fontSize)}
+    
+    func bold(_ value:String) -> NSMutableAttributedString {
+        
+        let attributes:[NSAttributedString.Key : Any] = [
+            .font : boldFont
+        ]
+        
+        self.append(NSAttributedString(string: value, attributes:attributes))
+        return self
+    }
+    
+    func normal(_ value:String) -> NSMutableAttributedString {
+        
+        let attributes:[NSAttributedString.Key : Any] = [
+            .font : normalFont,
+        ]
+        
+        self.append(NSAttributedString(string: value, attributes:attributes))
+        return self
+    }
+    /* Other styling methods */
+    func orangeHighlight(_ value:String) -> NSMutableAttributedString {
+        
+        let attributes:[NSAttributedString.Key : Any] = [
+            .font :  normalFont,
+            .foregroundColor : UIColor.white,
+            .backgroundColor : UIColor.orange
+        ]
+        
+        self.append(NSAttributedString(string: value, attributes:attributes))
+        return self
+    }
+    
+    func blackHighlight(_ value:String) -> NSMutableAttributedString {
+        
+        let attributes:[NSAttributedString.Key : Any] = [
+            .font :  normalFont,
+            .foregroundColor : UIColor.white,
+            .backgroundColor : UIColor.black
+            
+        ]
+        
+        self.append(NSAttributedString(string: value, attributes:attributes))
+        return self
+    }
+    
+    func underlined(_ value:String) -> NSMutableAttributedString {
+        
+        let attributes:[NSAttributedString.Key : Any] = [
+            .font :  normalFont,
+            .underlineStyle : NSUnderlineStyle.single.rawValue
+            
+        ]
+        
+        self.append(NSAttributedString(string: value, attributes:attributes))
+        return self
+    }
 }

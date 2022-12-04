@@ -52,14 +52,14 @@
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="ozY-dg-YOd">
                                 <rect key="frame" x="230" y="67" width="140" height="60"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9kh-4C-KyP" userLabel="LibraryButton">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9kh-4C-KyP" userLabel="LibraryButton">
                                         <rect key="frame" x="0.0" y="1.6666666666666643" width="60" height="57"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="60" id="Ekq-3J-kUL"/>
                                             <constraint firstAttribute="height" constant="60" id="fqe-e7-0uk"/>
                                         </constraints>
                                         <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <state key="normal" backgroundImage="folder" catalog="system">
+                                        <state key="normal" image="arrowshape.left.fill" catalog="system" backgroundImage="folder">
                                             <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         </state>
                                         <connections>
@@ -291,6 +291,7 @@
         </scene>
     </scenes>
     <resources>
+        <image name="arrowshape.left.fill" catalog="system" width="128" height="104"/>
         <image name="ellipsis.circle" catalog="system" width="128" height="123"/>
         <image name="eye" catalog="system" width="128" height="79"/>
         <image name="folder" catalog="system" width="128" height="96"/>
