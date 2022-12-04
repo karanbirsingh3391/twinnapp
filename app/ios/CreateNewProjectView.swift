@@ -142,6 +142,10 @@ class CreateNewProjectView: UIView, UITextFieldDelegate, UITableViewDelegate, UI
         
     
         if(self.isEdit){
+            clientNameTextField.isEnabled = false
+            clientNameTextField.frame = CGRect(x: 25, y: 150, width: self.frame.width-50, height: 40)
+            addClientButton.isHidden = true
+            
             createProjectButton.setTitle("Update", for: .normal)
             
             let dateFormatter = DateFormatter()
@@ -209,8 +213,6 @@ class CreateNewProjectView: UIView, UITextFieldDelegate, UITableViewDelegate, UI
         else{
             self.delegate?.showErrorToast(message: "The client does not exist.")
         }
-        
-       
     }
     
     @objc func addClientButtonAction(sender: UIButton!){
