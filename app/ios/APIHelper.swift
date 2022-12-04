@@ -35,16 +35,20 @@ final public class APIHelper: NSObject {
         let token_type: String
     }
     
-    func User(endpoint:String, parameters:[String: Any], method: String, completion: @escaping(String, Error?) -> ()){
+    func User(endpoint:String, parameters:[String: Any], method: String, accessToken:Bool, completion: @escaping(String, Error?) -> ()){
         
         let url = URL(string: baseURLAuth+endpoint)!
-        let access_token = UserDefaults.standard.value(forKey: "access_token") as! String
-        let bearer = "Bearer "+access_token
+        
         
         var request = URLRequest(url: url)
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
-        request.setValue(bearer, forHTTPHeaderField: "Authorization")
+        
+        if(accessToken){
+            let access_token = UserDefaults.standard.value(forKey: "access_token") as! String
+            let bearer = "Bearer "+access_token
+            request.setValue(bearer, forHTTPHeaderField: "Authorization")
+        }
         request.httpMethod = method
         request.httpBody = parameters.percentEncoded()
         

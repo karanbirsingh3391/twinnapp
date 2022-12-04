@@ -38,16 +38,20 @@ class CreateNewProjectView: UIView, UITextFieldDelegate, UITableViewDelegate, UI
     
     init(frame: CGRect, screenWidth: CGFloat, screenHeight: CGFloat, projectName: String, projectID: String, clientID: String, clientName: String, startDate:String, endDate:String, isEdit: Bool) {
         super.init(frame: frame)
+        self.backgroundColor = UIColor.white
+        self.layer.shadowColor = UIColor.systemGray.cgColor
+        self.layer.shadowOpacity = 1
+        self.layer.shadowOffset = .zero
+        self.layer.shadowRadius = 2
         //self.isUserInteractionEnabled = true
         
-        self.projectID = projectID
         self.isEdit = isEdit
+        self.projectID = projectID
         self.clientID = clientID
         let locale = Locale.current
         print(locale.description)
         print(locale.regionCode!)
         
-      
         let projectnameLabel = self.createLabel(frame: CGRect(x: 25, y: 50, width: 150, height: 20), labelText: "Project Name")
         self.addSubview(projectnameLabel)
         
@@ -144,6 +148,8 @@ class CreateNewProjectView: UIView, UITextFieldDelegate, UITableViewDelegate, UI
         if(self.isEdit){
             clientNameTextField.isEnabled = false
             clientNameTextField.frame = CGRect(x: 25, y: 150, width: self.frame.width-50, height: 40)
+            clientNameTextField.backgroundColor = .systemGray6
+            clientNameTextField.borderStyle = .roundedRect
             addClientButton.isHidden = true
             
             createProjectButton.setTitle("Update", for: .normal)
@@ -171,8 +177,11 @@ class CreateNewProjectView: UIView, UITextFieldDelegate, UITableViewDelegate, UI
             endDatePicker.date = Date()+60*60*24*60
         }
         
-       
+        NotificationCenter.default.addObserver(self, selector: #selector(cancelView), name: NSNotification.Name("com.user.projectcell.tapped"), object: nil)
+
     }
+    
+   
     
     func createLabel(frame: CGRect, labelText: String) -> UILabel{
         let customLabel = UILabel(frame: frame)
@@ -197,29 +206,52 @@ class CreateNewProjectView: UIView, UITextFieldDelegate, UITableViewDelegate, UI
         })
     }
     
+    @objc func cancelView(){
+        UIView.animate(withDuration: 0.3, delay: 0.0, options: [], animations: {
+            self.frame = CGRect(x: UIScreen.main.bounds.width , y: 0, width: 400, height: UIScreen.main.bounds.width)
+
+        }, completion: { (finished: Bool) in
+            self.removeFromSuperview()
+        })
+    }
+    
     @objc func createProjectButtonAction(sender: UIButton!){
         print("create project button pressed")
         print(projectNameTextField.text!)
         
-        let dateFormatter: DateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        let startDate: String = dateFormatter.string(from: startDatePicker.date)
-        let endDate: String = dateFormatter.string(from: endDatePicker.date)
-        print(startDate)
-        print(endDate)
-        if(!self.clientID.isEmpty){
-            self.delegate?.sendRequest(projectName: projectNameTextField.text!, projectID: self.projectID, clientID: self.clientID, startDate:startDate, endDate:endDate, isEdit: self.isEdit)
+        if (!projectNameTextField.text!.isEmpty && !clientNameTextField.text!.isEmpty) {
+            let dateFormatter: DateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            let startDate: String = dateFormatter.string(from: startDatePicker.date)
+            let endDate: String = dateFormatter.string(from: endDatePicker.date)
+            print(startDate)
+            print(endDate)
+            if(!self.clientID.isEmpty){
+                self.delegate?.sendRequest(projectName: projectNameTextField.text!, projectID: self.projectID, clientID: self.clientID, startDate:startDate, endDate:endDate, isEdit: self.isEdit)
+            }
+            else{
+                self.delegate?.showErrorToast(message: "The client does not exist.")
+            }
         }
         else{
-            self.delegate?.showErrorToast(message: "The client does not exist.")
+            self.delegate?.showErrorToast(message: "Please enter project and client name.")
         }
+        
+        
     }
     
     @objc func addClientButtonAction(sender: UIButton!){
         print("add client button pressed")
-        projectListTableView.removeFromSuperview()
-        clientNameTextField.resignFirstResponder()
-        self.delegate?.createNewClient(clientName: clientNameTextField.text!)
+        if (!clientNameTextField.text!.isEmpty) {
+            projectListTableView.removeFromSuperview()
+            clientNameTextField.resignFirstResponder()
+            self.delegate?.createNewClient(clientName: clientNameTextField.text!)
+        }
+        else{
+            self.delegate?.showErrorToast(message: "Please enter client name.")
+            clientNameTextField.resignFirstResponder()
+        }
+        
     }
     
     // MARK: - UITextField Delegate Functions
@@ -227,7 +259,15 @@ class CreateNewProjectView: UIView, UITextFieldDelegate, UITableViewDelegate, UI
         print("begin editing")
         if(textField.tag == 2){
             projectListTableView = UITableView(frame: CGRect(x: 25, y: 190, width: self.frame.width-100, height: 140))
-            projectListTableView.backgroundColor = .clear
+            projectListTableView.backgroundColor = UIColor.white
+            projectListTableView.layer.borderColor = UIColor.systemGray4.cgColor
+            projectListTableView.layer.borderWidth = 1
+//            projectListTableView.layer.shadowColor = UIColor.systemGray.cgColor
+//            projectListTableView.layer.shadowOpacity = 1
+//            projectListTableView.layer.shadowOffset = .zero
+//            projectListTableView.layer.shadowRadius = 20
+            //projectListTableView.clipsToBounds = false
+            //projectListTableView.layer.masksToBounds = false
             projectListTableView.delegate = self
             projectListTableView.dataSource = self
             projectListTableView.register(UITableViewCell.self, forCellReuseIdentifier: reuseIdentifier)
@@ -280,13 +320,9 @@ class CreateNewProjectView: UIView, UITextFieldDelegate, UITableViewDelegate, UI
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath)
         var content = cell.defaultContentConfiguration()
-
-        // Configure content.
         content.image = UIImage(systemName: "star")
         content.text = self.projectListArray[indexPath.row]["clientName"] as? String
-        // Customize appearance.
         content.imageProperties.tintColor = .blue
-
         cell.contentConfiguration = content
         return cell
     }

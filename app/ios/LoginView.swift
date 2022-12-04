@@ -8,8 +8,9 @@
 import Foundation
 import UIKit
 
-protocol LoginViewDelegate: class {
+protocol LoginViewDelegate: AnyObject {
     func sendSetupRequest(email: String, password: String)
+    func showLoginErrorToast(message:String)
 }
 
 class LoginView: UIView, UITextFieldDelegate {
@@ -122,16 +123,15 @@ class LoginView: UIView, UITextFieldDelegate {
     
     @objc func loginButtonAction(sender: UIButton!){
         print("button Pressed")
-        loginButton.setTitle("", for: .normal)
-        spinnerView = UIActivityIndicatorView(style: .medium)
-        spinnerView.color = .white
-        spinnerView.center = loginButton.center
-        //spinnerView.backgroundColor = .green
-        self.addSubview(spinnerView)
-        spinnerView.startAnimating()
+        if(!emailTextField.text!.isEmpty && !passwordTextField.text!.isEmpty){
+            loginButton.setTitle("", for: .normal)
+            spinnerView = UIActivityIndicatorView(style: .medium)
+            spinnerView.color = .white
+            spinnerView.center = loginButton.center
+            //spinnerView.backgroundColor = .green
+            self.addSubview(spinnerView)
+            spinnerView.startAnimating()
         
-        if((emailTextField.text?.isEmpty) != nil)
-        {
             //loginUser()
             let parameters: [String: Any] = [
                 "grant_type": "",
@@ -141,7 +141,7 @@ class LoginView: UIView, UITextFieldDelegate {
                 "client_id": "",
                 "client_secret": ""
             ]
-            APIHelper.shareInstance.User(endpoint: "/auth/login",parameters: parameters, method: "POST") { responseString, error in
+            APIHelper.shareInstance.User(endpoint: "/auth/login",parameters: parameters, method: "POST", accessToken: false) { responseString, error in
                 print("login response " + responseString)
 
                 DispatchQueue.main.async {
@@ -161,6 +161,9 @@ class LoginView: UIView, UITextFieldDelegate {
                     }
                 }
             }
+        }
+        else{
+            self.delegate?.showLoginErrorToast(message: "Email and Password cannot be empty.")
         }
     }
     

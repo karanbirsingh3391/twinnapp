@@ -27,7 +27,12 @@ class ProfileView: UIView, UITextFieldDelegate {
     
     init(frame: CGRect, screenWidth: CGFloat, screenHeight: CGFloat, withDictionary: [String: Any]) {
         super.init(frame: frame)
-        print(withDictionary)
+        self.backgroundColor = UIColor.white
+        self.layer.shadowColor = UIColor.systemGray.cgColor
+        self.layer.shadowOpacity = 1
+        self.layer.shadowOffset = .zero
+        self.layer.shadowRadius = 2
+        
         let projectnameLabel = self.createLabel(frame: CGRect(x: 25, y: 50, width: 150, height: 20), labelText: "Name")
         self.addSubview(projectnameLabel)
         
@@ -87,6 +92,8 @@ class ProfileView: UIView, UITextFieldDelegate {
         l.cornerRadius = 10
         myLogoutButton.layer.addSublayer(l)
         self.addSubview(myLogoutButton)
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(cancelView), name: NSNotification.Name("com.user.projectcell.tapped"), object: nil)
     }
     
     func createLabel(frame: CGRect, labelText: String) -> UILabel{
@@ -104,6 +111,15 @@ class ProfileView: UIView, UITextFieldDelegate {
     // MARK: - Button Actions
     @objc func cancelButtonAction(sender: UIButton!){
         print("cancel button pressed ")
+        UIView.animate(withDuration: 0.3, delay: 0.0, options: [], animations: {
+            self.frame = CGRect(x: UIScreen.main.bounds.width , y: 0, width: 400, height: UIScreen.main.bounds.width)
+
+        }, completion: { (finished: Bool) in
+            self.removeFromSuperview()
+        })
+    }
+    
+    @objc func cancelView(){
         UIView.animate(withDuration: 0.3, delay: 0.0, options: [], animations: {
             self.frame = CGRect(x: UIScreen.main.bounds.width , y: 0, width: 400, height: UIScreen.main.bounds.width)
 

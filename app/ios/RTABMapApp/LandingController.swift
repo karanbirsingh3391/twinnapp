@@ -118,7 +118,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         
         let logoImageView = UIImageView(image: UIImage(named: "Twinn LOGO.png")!)
         logoImageView.backgroundColor = .clear
-        logoImageView.frame = CGRect(x: 15, y: 25, width: 50, height: 50)
+        logoImageView.frame = CGRect(x: 15, y: 35, width: 50, height: 50)
         menuView.addSubview(logoImageView)
         
         menuViewProjectsButton.frame = CGRect(x: 4, y: 120, width: 72, height: 72)
@@ -201,7 +201,8 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         //layout.sectionInset = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
         //layout.itemSize = CGSize(width: 200, height: 280)
         //layout.minimumLineSpacing = 50
-        //layout.minimumInteritemSpacing = 10
+        layout.minimumInteritemSpacing = 10
+        
         myCollectionView.delegate = self
         myCollectionView.dataSource = self
         myCollectionView.backgroundColor = UIColor.clear
@@ -214,7 +215,6 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     
     func createNewProjectView(withName: String, withProjectID: String, clientID: String, clientName: String, startDate:String, endDate:String, isEdit: Bool){
         createNewProjectView = CreateNewProjectView(frame: CGRect(x: screenWidth, y: 0, width: 400, height: screenHeight), screenWidth: screenWidth, screenHeight: screenHeight, projectName: withName, projectID: withProjectID, clientID: clientID, clientName: clientName, startDate:startDate, endDate:endDate, isEdit:isEdit)
-        createNewProjectView.backgroundColor = .systemGray6
         createNewProjectView.delegate = self
         self.view.addSubview(createNewProjectView)
         //self.view.bringSubviewToFront(newScanButton)
@@ -231,6 +231,8 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     func isKeyPresentInUserDefaults(key: String) -> Bool {
         return UserDefaults.standard.object(forKey: key) != nil
     }
+    
+    
     
     func updateDatabases()
     {
@@ -738,7 +740,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         {
             
             let parameters: [String: Any] = [:]
-            APIHelper.shareInstance.User(endpoint:"/user/me", parameters: parameters, method: "GET") { responseString, error in
+            APIHelper.shareInstance.User(endpoint:"/user/me", parameters: parameters, method: "GET", accessToken: true) { responseString, error in
                 DispatchQueue.main.async {
                     if(responseString == ""){
                         self.showToast(message: "Something went wrong.", font: UIFont.preferredFont(forTextStyle: .body))
@@ -805,15 +807,12 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath)
         let interaction = UIContextMenuInteraction(delegate: self)
-        //cell.frame = CGRectMake(0, 0, 100, 100)
-        //let cell = UICollectionViewCell(frame: CGRectMake(0, 0, 100, 100))
-        // Use the outlet in our custom class to get a reference to the UILabel in the cell
-        //cell.myLabel.text = self.items[indexPath.row] // The row value is the same as the index of the desired text within the array.
-        cell.backgroundColor = UIColor.systemGray6
+        cell.backgroundColor = UIColor.white
         cell.layer.shadowColor = UIColor.systemGray.cgColor
         cell.layer.shadowOpacity = 1
         cell.layer.shadowOffset = .zero
         cell.layer.shadowRadius = 2
+        
         
         let cellOptionsButton = UIButton(frame: CGRect(x: cell.frame.width-25, y: 16, width: 20, height: 20))
         cellOptionsButton.backgroundColor = .clear
@@ -822,6 +821,66 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         cellOptionsButton.setImage(UIImage(named: "CellOptionsButton"), for: .highlighted)
         //cellOptionsButton.addTarget(self, action: #selector(buttonAction), for: .touchUpInside)
         cellOptionsButton.addInteraction(interaction)
+        cellOptionsButton.tag = indexPath.row
+        cellOptionsButton.showsMenuAsPrimaryAction = true
+        
+        if(self.isScansCollectionViewType){
+            let shareAction = UIAction(title: "Share", image: UIImage(systemName: "square.and.arrow.up")) { _ in
+                print(self.databases[interaction.view!.tag])
+                self.shareFile(self.databases[interaction.view!.tag])
+            }
+            
+            let editAction = UIAction(title: "Rename", image: UIImage(systemName: "square.and.pencil")) { _ in
+                self.rename(fileURL: self.databases[interaction.view!.tag])
+            }
+            
+            let deleteAction = UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
+                do {
+                    try FileManager.default.removeItem(at: self.databases[interaction.view!.tag])
+                }
+                catch {
+                    print("Error deleting file \(self.databases[interaction.view!.tag])")
+                }
+                self.createCollectionView()
+            }
+            cellOptionsButton.menu = UIMenu(title: "", children: [shareAction, editAction, deleteAction])
+        }
+        else{
+            let editAction = UIAction(title: "Edit Project Name", image: UIImage(systemName: "square.and.pencil")) { _ in
+                let projectID = self.myCollectionViewArray[interaction.view!.tag]["projectId"] as? String
+                let projectName = self.myCollectionViewArray[interaction.view!.tag]["name"] as? String
+                let startDate = self.myCollectionViewArray[interaction.view!.tag]["dateCreated"] as? String
+                let endDate = self.myCollectionViewArray[interaction.view!.tag]["endDate"] as? String
+                let clientID = self.myCollectionViewArray[interaction.view!.tag]["clientId"] as? String
+                let clientName = self.myCollectionViewArray[interaction.view!.tag]["clientName"] as? String
+                self.createNewProjectView(withName: projectName!, withProjectID: projectID!, clientID: clientID!, clientName: clientName!, startDate: startDate!, endDate: endDate!, isEdit: true)
+                
+            }
+            
+            let copyLinkAction = UIAction(title: "Copy Link", image: UIImage(systemName: "square.and.arrow.up")) { _ in
+                let projectID = self.myCollectionViewArray[interaction.view!.tag]["projectId"] as? String
+                
+                // write to clipboard
+                UIPasteboard.general.string = projectID!
+
+                // read from clipboard
+                //let content = UIPasteboard.general.string
+                
+                self.showToast(message: "Project ID copied to clipboard.", font: UIFont.preferredFont(forTextStyle: .body))
+            }
+            
+            let duplicateAction = UIAction(title: "Duplicate", image: UIImage(systemName: "square.and.arrow.up")) { _ in
+                let projectID = self.myCollectionViewArray[interaction.view!.tag]["projectId"] as? String
+                self.duplicateProject(projectID: projectID!)
+            }
+            
+            let deleteAction = UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
+                
+                let projectID = self.myCollectionViewArray[interaction.view!.tag]["projectId"] as? String
+                self.deleteProject(projectID: projectID!)
+            }
+            cellOptionsButton.menu = UIMenu(title: "", children: [editAction, copyLinkAction, duplicateAction, deleteAction])
+        }
         cell.addSubview(cellOptionsButton)
         
         let scanTitle = UILabel(frame: CGRect(x: 12, y: 16, width: 170, height: 15))
@@ -840,10 +899,6 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         //let image = UIImage(named: imageName)
         let imageView = UIImageView()
         imageView.frame = CGRect(x: 10, y: 50, width: cell.frame.width-20, height: 146)
-//        imageView.layer.shadowColor = UIColor.systemGray.cgColor
-//        imageView.layer.shadowOpacity = 1
-//        imageView.layer.shadowOffset = .zero
-//        imageView.layer.shadowRadius = 5
         cell.addSubview(imageView)
         
         let cellProgressView = UIProgressView(frame: CGRect(x: 0, y: 210, width: cell.frame.width, height: 20))
@@ -896,8 +951,6 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         statusTitle.numberOfLines = 1
         statusTitle.adjustsFontSizeToFitWidth = true
         
-        
-        
         if(self.isScansCollectionViewType)
         {
             DispatchQueue.global().async {
@@ -930,13 +983,17 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
       return 50
     }
     
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+        return 0
+    }
     
+
     // MARK: - UICollectionViewDelegate protocol
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        // handle tap events
         print("You selected cell #\(indexPath.item)!")
-        
+        NotificationCenter.default.post(name: NSNotification.Name("com.user.projectcell.tapped"), object: nil)
+       
         if(isScansCollectionViewType)
         {
             
@@ -1003,7 +1060,6 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     
     @objc func profileButtonAction(sender: UIButton!){
         myProfileView = ProfileView(frame: CGRect(x: screenWidth, y: 0, width: 400, height: screenHeight), screenWidth: screenWidth, screenHeight: screenHeight, withDictionary: self.myProfileDictionary)
-        myProfileView.backgroundColor = .systemGray6
         myProfileView.delegate = self
         self.view.addSubview(myProfileView)
         //self.view.bringSubviewToFront(newScanButton)
@@ -1024,12 +1080,14 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         }, completion: { (finished: Bool) in
             self.labelsSwitchToProjectsView()
             self.setupLoginView()
+            UserDefaults.standard.removeObject(forKey: "access_token")
         })
         
         
     }
     
     // MARK: - Context Menu Actions
+    
     func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
         
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
@@ -1131,6 +1189,10 @@ extension LandingController: LoginViewDelegate {
     func sendSetupRequest(email: String, password: String) {
         fetchProfile()
         fetchProjectsData()
+    }
+    
+    func showLoginErrorToast(message:String){
+        showToast(message: message, font: UIFont.preferredFont(forTextStyle: .body))
     }
 }
 
