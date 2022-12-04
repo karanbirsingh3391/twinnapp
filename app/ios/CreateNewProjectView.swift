@@ -9,8 +9,9 @@ import Foundation
 import UIKit
 
 protocol CreateNewProjectViewDelegate: AnyObject {
-    func sendRequest(projectName: String, projectID: String, startDate:String, endDate:String, isEdit:Bool)
+    func sendRequest(projectName: String, projectID: String, clientID:String, startDate:String, endDate:String, isEdit:Bool)
     func createNewClient(clientName:String)
+    func showErrorToast(message:String)
 }
 
 class CreateNewProjectView: UIView, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource {
@@ -19,6 +20,7 @@ class CreateNewProjectView: UIView, UITextFieldDelegate, UITableViewDelegate, UI
     public var delegate: CreateNewProjectViewDelegate!
     public var projectNameTextField: UITextField!
     public var clientNameTextField: UITextField!
+    public var clientID: String!
     private var addClientButton: UIButton!
     public var startDatePicker: UIDatePicker!
     public var endDatePicker: UIDatePicker!
@@ -34,13 +36,13 @@ class CreateNewProjectView: UIView, UITextFieldDelegate, UITableViewDelegate, UI
       super.init(coder: aDecoder)
     }
     
-    init(frame: CGRect, screenWidth: CGFloat, screenHeight: CGFloat, projectName: String, projectID: String, startDate:String, endDate:String, isEdit: Bool) {
+    init(frame: CGRect, screenWidth: CGFloat, screenHeight: CGFloat, projectName: String, projectID: String, clientID: String, clientName: String, startDate:String, endDate:String, isEdit: Bool) {
         super.init(frame: frame)
         //self.isUserInteractionEnabled = true
         
         self.projectID = projectID
         self.isEdit = isEdit
-        
+        self.clientID = clientID
         let locale = Locale.current
         print(locale.description)
         print(locale.regionCode!)
@@ -67,7 +69,7 @@ class CreateNewProjectView: UIView, UITextFieldDelegate, UITableViewDelegate, UI
         
         clientNameTextField = UITextField(frame: CGRect(x: 25, y: 150, width: self.frame.width-100, height: 40))
         clientNameTextField.placeholder = "Enter Client Name"
-        clientNameTextField.text = projectName
+        clientNameTextField.text = clientName
         clientNameTextField.font = UIFont.systemFont(ofSize: 15)
         clientNameTextField.borderStyle = UITextField.BorderStyle.roundedRect
         clientNameTextField.autocorrectionType = UITextAutocorrectionType.no
@@ -139,14 +141,25 @@ class CreateNewProjectView: UIView, UITextFieldDelegate, UITableViewDelegate, UI
         
         
     
-        if(self.isEdit && !startDate.isEmpty && !endDate.isEmpty && startDate.count > 0 && endDate.count > 0){
+        if(self.isEdit){
             createProjectButton.setTitle("Update", for: .normal)
+            
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd"
-            let editedStartdate = dateFormatter.date(from:startDate)!
-            let editedEnddate = dateFormatter.date(from:endDate)!
-            startDatePicker.date = editedStartdate
-            endDatePicker.date = editedEnddate
+            if(!startDate.isEmpty && startDate.count > 0){
+                let editedStartdate = dateFormatter.date(from:startDate)!
+                startDatePicker.date = editedStartdate
+                if(!endDate.isEmpty && endDate.count > 0){
+                    let editedEnddate = dateFormatter.date(from:endDate)!
+                    endDatePicker.date = editedEnddate
+                }
+                else{
+                    endDatePicker.date = Date()+60*60*24*60
+                }
+            }
+            else{
+                startDatePicker.date = Date()
+            }
         }
         else{
             createProjectButton.setTitle("Create Project", for: .normal)
@@ -190,13 +203,20 @@ class CreateNewProjectView: UIView, UITextFieldDelegate, UITableViewDelegate, UI
         let endDate: String = dateFormatter.string(from: endDatePicker.date)
         print(startDate)
         print(endDate)
-        self.delegate?.sendRequest(projectName: projectNameTextField.text!, projectID: self.projectID, startDate:startDate, endDate:endDate, isEdit: self.isEdit)
+        if(!self.clientID.isEmpty){
+            self.delegate?.sendRequest(projectName: projectNameTextField.text!, projectID: self.projectID, clientID: self.clientID, startDate:startDate, endDate:endDate, isEdit: self.isEdit)
+        }
+        else{
+            self.delegate?.showErrorToast(message: "The client does not exist.")
+        }
+        
        
     }
     
     @objc func addClientButtonAction(sender: UIButton!){
         print("add client button pressed")
         projectListTableView.removeFromSuperview()
+        clientNameTextField.resignFirstResponder()
         self.delegate?.createNewClient(clientName: clientNameTextField.text!)
     }
     
@@ -218,9 +238,8 @@ class CreateNewProjectView: UIView, UITextFieldDelegate, UITableViewDelegate, UI
         print("end editing")
         if(textField.tag == 2){
             projectListTableView.removeFromSuperview()
+            clientNameTextField.resignFirstResponder()
         }
-        
-        
     }
     
     func textFieldDidChangeSelection(_ textField: UITextField) {
@@ -272,6 +291,7 @@ class CreateNewProjectView: UIView, UITextFieldDelegate, UITableViewDelegate, UI
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         clientNameTextField.text = self.projectListArray[indexPath.row]["clientName"] as? String
+        self.clientID = self.projectListArray[indexPath.row]["clientId"] as? String
         clientNameTextField.resignFirstResponder()
         projectListTableView.removeFromSuperview()
     }

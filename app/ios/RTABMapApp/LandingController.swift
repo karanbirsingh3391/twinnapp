@@ -212,8 +212,8 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         
     }
     
-    func createNewProjectView(withName: String, withProjectID: String, startDate:String, endDate:String, isEdit: Bool){
-        createNewProjectView = CreateNewProjectView(frame: CGRect(x: screenWidth, y: 0, width: 400, height: screenHeight), screenWidth: screenWidth, screenHeight: screenHeight, projectName: withName, projectID: withProjectID,startDate:startDate, endDate:endDate, isEdit:isEdit)
+    func createNewProjectView(withName: String, withProjectID: String, clientID: String, clientName: String, startDate:String, endDate:String, isEdit: Bool){
+        createNewProjectView = CreateNewProjectView(frame: CGRect(x: screenWidth, y: 0, width: 400, height: screenHeight), screenWidth: screenWidth, screenHeight: screenHeight, projectName: withName, projectID: withProjectID, clientID: clientID, clientName: clientName, startDate:startDate, endDate:endDate, isEdit:isEdit)
         createNewProjectView.backgroundColor = .systemGray6
         createNewProjectView.delegate = self
         self.view.addSubview(createNewProjectView)
@@ -422,6 +422,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                                         self.myCollectionViewArray.append([
                                             "name": project["projectName"]!,
                                             "clientName":project["clientName"]!,
+                                            "clientId":project["clientId"]!,
                                             "dateCreated":project["startDate"]!,
                                             "endDate":project["endDate"]!,
                                             "status": "In Progress",
@@ -711,22 +712,14 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                     else
                     {
                         let dict = self.convertToDictionary(text: responseString)
-                        print(responseString)
                         let clientName = dict?["clientName"] as? String
                         let clientID = dict?["clientId"] as? String
-                        
                         self.createNewProjectView.projectListArray.append(
                             ["clientName":clientName!,
                              "clientId":clientID!])
                         
+                        self.createNewProjectView.clientID = clientID
                         self.showToast(message: "Client created successfully", font: UIFont.preferredFont(forTextStyle: .body))
-
-                        UIView.animate(withDuration: 1.0, delay: 0.0, options: [], animations: {
-                            
-                        }, completion: { (finished: Bool) in
-                            
-                        })
-                        
                     }
                     
                 }
@@ -992,7 +985,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         }
         else
         {
-            self.createNewProjectView(withName: "", withProjectID: "", startDate: "", endDate: "", isEdit:false)
+            self.createNewProjectView(withName: "", withProjectID: "", clientID: "", clientName: "", startDate: "", endDate: "", isEdit:false)
         }
 
     }
@@ -1067,7 +1060,10 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                     let projectName = self.myCollectionViewArray[interaction.view!.tag]["name"] as? String
                     let startDate = self.myCollectionViewArray[interaction.view!.tag]["dateCreated"] as? String
                     let endDate = self.myCollectionViewArray[interaction.view!.tag]["endDate"] as? String
-                    self.createNewProjectView(withName: projectName!, withProjectID: projectID!, startDate: startDate!, endDate: endDate!, isEdit: true)
+                    let clientID = self.myCollectionViewArray[interaction.view!.tag]["clientId"] as? String
+                    let clientName = self.myCollectionViewArray[interaction.view!.tag]["clientName"] as? String
+                    self.createNewProjectView(withName: projectName!, withProjectID: projectID!, clientID: clientID!, clientName: clientName!, startDate: startDate!, endDate: endDate!, isEdit: true)
+                    
                 }
                 
                 let copyLinkAction = UIAction(title: "Copy Link", image: UIImage(systemName: "square.and.arrow.up")) { _ in
@@ -1147,18 +1143,22 @@ extension LandingController: ProfileViewDelegate {
 
 // MARK: - CreateNewProjectViewExtension
 extension LandingController: CreateNewProjectViewDelegate {
-    func sendRequest(projectName: String, projectID: String, startDate:String, endDate:String, isEdit: Bool) {
+    func sendRequest(projectName: String, projectID: String, clientID: String, startDate:String, endDate:String, isEdit: Bool) {
         
         if(isEdit){
-            self.modifyProject(name: projectName, clientID: UserDefaults.standard.object(forKey: "clientId")! as! String, projectID: projectID, startDate: startDate, endDate: endDate)
+            self.modifyProject(name: projectName, clientID: clientID, projectID: projectID, startDate: startDate, endDate: endDate)
         }
         else{
-            self.createNewProject(name: projectName, clientID: UserDefaults.standard.object(forKey: "clientId")! as! String, projectID: projectID, startDate: startDate, endDate: endDate)
+            self.createNewProject(name: projectName, clientID: clientID, projectID: projectID, startDate: startDate, endDate: endDate)
         }
     }
     
     func createNewClient(clientName:String){
         addNewClient(clientName: clientName)
+    }
+    
+    func showErrorToast(message:String){
+        showToast(message: message, font: UIFont.preferredFont(forTextStyle: .body))
     }
     
 }
