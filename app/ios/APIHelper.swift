@@ -58,7 +58,8 @@ final public class APIHelper: NSObject {
         
         let config = URLSessionConfiguration.default
         config.waitsForConnectivity = true
-        config.timeoutIntervalForResource = 5
+        config.timeoutIntervalForResource = 2
+        
         
         let task = URLSession(configuration: config).dataTask(with: request) { data, response, error in
             guard
@@ -127,7 +128,7 @@ final public class APIHelper: NSObject {
         //print(request.allHTTPHeaderFields)
         let config = URLSessionConfiguration.default
         config.waitsForConnectivity = true
-        config.timeoutIntervalForResource = 5
+        config.timeoutIntervalForResource = 2
         
         let task = URLSession(configuration: config).dataTask(with: request) { data, response, error in
             guard

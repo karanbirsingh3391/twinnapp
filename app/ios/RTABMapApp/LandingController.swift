@@ -450,6 +450,58 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         }
     }
     
+    func fetchScansData(projectID: String){
+
+        if (isKeyPresentInUserDefaults(key: "access_token"))
+        {
+            myCollectionViewArray.removeAll()
+            self.addSpinner()
+            
+            let parameters: [String: Any] = [:]
+            //"/storage?path=/Projects/"+projectID+"/Scans"
+            APIHelper.shareInstance.apiCall(endpoint: "/storage?path=/Projects/1234/Scans", parameters: parameters, method: "GET") { responseString, error in
+                //print(responseString)
+                
+                DispatchQueue.main.async {
+                    self.removeSpinner()
+                    
+                    if(responseString == ""){
+                        self.showToast(message: "Something went wrong.", font: UIFont.preferredFont(forTextStyle: .body))
+                    }
+                    else{
+                        let dict = self.convertToDictionary(text: responseString)
+                
+                        if let scans = dict?["data"] as? [[String: AnyObject]] {
+                            //for i in 0...projects.count-1 {}
+                                for scan in scans {
+                                    self.myCollectionViewArray.append([
+                                        "Id": scan["Id"]!,
+                                        "name":scan["name"]!,
+                                        "display_name":scan["display_name"]!,
+                                        "downloadUrl":scan["downloadUrl"]!,
+                                        "path":scan["path"]!,
+                                        "status": "In Progress",
+                                        "image": "ProjectSmapleImage.png",
+                                        "resource":scan["resource"]!])
+                                }
+                            
+                        }
+                        print(self.myCollectionViewArray)
+                        if(!self.myCollectionViewArray.isEmpty){
+                            self.setupScanListView()
+                        }
+                        
+                    }
+                }
+            }
+        }
+        else
+        {
+            setupLoginView()
+            //self.showToast(message: "Your session has expired, please login again.", font: UIFont.preferredFont(forTextStyle: .body))
+        }
+    }
+    
     func fetchClientsList(){
         isScansCollectionViewType = false
         if (isKeyPresentInUserDefaults(key: "access_token"))
@@ -814,7 +866,6 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         cell.layer.shadowOffset = .zero
         cell.layer.shadowRadius = 2
         
-        
         let cellOptionsButton = UIButton(frame: CGRect(x: cell.frame.width-25, y: 16, width: 20, height: 20))
         cellOptionsButton.backgroundColor = .clear
         cellOptionsButton.imageView?.contentMode = .scaleAspectFit
@@ -844,7 +895,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                 }
                 self.createCollectionView()
             }
-            cellOptionsButton.menu = UIMenu(title: "", children: [shareAction, editAction, deleteAction])
+            cellOptionsButton.menu = UIMenu(title: "", children: [shareAction, deleteAction])
         }
         else{
             let editAction = UIAction(title: "Edit Project Name", image: UIImage(systemName: "square.and.pencil")) { _ in
@@ -885,7 +936,6 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         cell.addSubview(cellOptionsButton)
         
         let scanTitle = UILabel(frame: CGRect(x: 12, y: 16, width: 170, height: 15))
-        //projectTitle.center = CGPoint(x: 160, y: 285)
         //projectTitle.font = UIFont(name: projectTitle.font.fontName, size: 20)
         scanTitle.backgroundColor = .clear
         scanTitle.textAlignment = .left
@@ -902,72 +952,71 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         imageView.frame = CGRect(x: 10, y: 50, width: cell.frame.width-20, height: 146)
         cell.addSubview(imageView)
         
-        let cellProgressView = UIProgressView(frame: CGRect(x: 0, y: 210, width: cell.frame.width, height: 20))
-        cellProgressView.backgroundColor = .clear
-        cellProgressView.setProgress(1.0, animated: true)
-        cellProgressView.trackTintColor = UIColor(red: 0.925, green: 0.953, blue: 0.996, alpha: 1)
-        cellProgressView.tintColor = UIColor(red: 0.235, green: 0.475, blue: 0.871, alpha: 1)
-        let transform : CGAffineTransform = CGAffineTransformMakeScale(1.0, 3.0)
-        cellProgressView.transform = transform
-        
-        
-        let dateScanTitle = UILabel(frame: CGRect(x: 12, y: 241, width: 70, height: 12))
-        //projectTitle.center = CGPoint(x: 160, y: 285)
-        //projectTitle.font = UIFont(name: projectTitle.font.fontName, size: 20)
-        dateScanTitle.backgroundColor = .clear
-        dateScanTitle.textAlignment = .left
-        dateScanTitle.font = UIFont.preferredFont(forTextStyle: .body)
-        dateScanTitle.font.withSize(8)
-        dateScanTitle.textColor = .systemGray
-        dateScanTitle.numberOfLines = 1
-        dateScanTitle.adjustsFontSizeToFitWidth = true
-        cell.addSubview(dateScanTitle)
-        
-        let dateTitle = UILabel(frame: CGRect(x: 12, y: 254, width: 70, height: 15))
-        //projectTitle.center = CGPoint(x: 160, y: 285)
-        //projectTitle.font = UIFont(name: projectTitle.font.fontName, size: 20)
-        dateTitle.backgroundColor = .clear
-        dateTitle.textAlignment = .left
-        dateTitle.font = UIFont.preferredFont(forTextStyle: .body)
-        dateTitle.font.withSize(8)
-        dateTitle.textColor = .systemBlue
-        //dateTitle.text  = URL(fileURLWithPath: databases[indexPath.row].path).lastPathComponent
-        
-        dateTitle.text  = self.myCollectionViewArray[indexPath.row]["dateCreated"] as? String
-        
-        //dateTitle.text = "05/08/2022"
-        dateTitle.numberOfLines = 1
-        dateTitle.adjustsFontSizeToFitWidth = true
-        cell.addSubview(dateTitle)
-        
-        let statusTitle = UILabel(frame: CGRect(x: 110, y: 247, width: 80, height: 20))
-        //projectTitle.center = CGPoint(x: 160, y: 285)
-        //projectTitle.font = UIFont(name: projectTitle.font.fontName, size: 20)
-        statusTitle.backgroundColor = .clear
-        statusTitle.textAlignment = .center
-        statusTitle.font = UIFont.preferredFont(forTextStyle: .body)
-        statusTitle.font.withSize(8)
-        statusTitle.textColor = .systemBlue
-        statusTitle.text = self.myCollectionViewArray[indexPath.row]["status"] as? String
-        statusTitle.numberOfLines = 1
-        statusTitle.adjustsFontSizeToFitWidth = true
-        
         if(self.isScansCollectionViewType)
         {
-            DispatchQueue.global().async {
-                let downloadedImage = getPreviewImage(databasePath: self.myCollectionViewArray[indexPath.row]["image"] as! String)
-                DispatchQueue.main.async {
-                    imageView.image = downloadedImage
-                }
-            }
-            cell.addSubview(cellProgressView)
-            dateScanTitle.text = "Date Scanned"
-            cell.addSubview(statusTitle)
+            
+            imageView.image = UIImage(named: self.myCollectionViewArray[indexPath.row]["image"] as! String)!
+//            DispatchQueue.global().async {
+//                let downloadedImage = getPreviewImage(databasePath: self.myCollectionViewArray[indexPath.row]["image"] as! String)
+//                DispatchQueue.main.async {
+//                    imageView.image = downloadedImage
+//                }
+//            }
+            
+            //        let cellProgressView = UIProgressView(frame: CGRect(x: 0, y: 210, width: cell.frame.width, height: 20))
+            //        cellProgressView.backgroundColor = .clear
+            //        cellProgressView.setProgress(1.0, animated: true)
+            //        cellProgressView.trackTintColor = UIColor(red: 0.925, green: 0.953, blue: 0.996, alpha: 1)
+            //        cellProgressView.tintColor = UIColor(red: 0.235, green: 0.475, blue: 0.871, alpha: 1)
+            //        let transform : CGAffineTransform = CGAffineTransformMakeScale(1.0, 3.0)
+            //        cellProgressView.transform = transform
+            //        cell.addSubview(cellProgressView)
         }
         else
         {
             imageView.image = UIImage(named: self.myCollectionViewArray[indexPath.row]["image"] as! String)!
+            
+            let dateScanTitle = UILabel(frame: CGRect(x: 12, y: 241, width: 70, height: 12))
+            //projectTitle.center = CGPoint(x: 160, y: 285)
+            //projectTitle.font = UIFont(name: projectTitle.font.fontName, size: 20)
+            dateScanTitle.backgroundColor = .clear
+            dateScanTitle.textAlignment = .left
+            dateScanTitle.font = UIFont.preferredFont(forTextStyle: .body)
+            dateScanTitle.font.withSize(8)
+            dateScanTitle.textColor = .systemGray
+            dateScanTitle.numberOfLines = 1
+            dateScanTitle.adjustsFontSizeToFitWidth = true
             dateScanTitle.text = "Date Created"
+            cell.addSubview(dateScanTitle)
+            
+            let dateTitle = UILabel(frame: CGRect(x: 12, y: 254, width: 70, height: 15))
+            //projectTitle.center = CGPoint(x: 160, y: 285)
+            //projectTitle.font = UIFont(name: projectTitle.font.fontName, size: 20)
+            dateTitle.backgroundColor = .clear
+            dateTitle.textAlignment = .left
+            dateTitle.font = UIFont.preferredFont(forTextStyle: .body)
+            dateTitle.font.withSize(8)
+            dateTitle.textColor = .systemBlue
+            //dateTitle.text  = URL(fileURLWithPath: databases[indexPath.row].path).lastPathComponent
+            dateTitle.text  = self.myCollectionViewArray[indexPath.row]["dateCreated"] as? String
+            //dateTitle.text = "05/08/2022"
+            dateTitle.numberOfLines = 1
+            dateTitle.adjustsFontSizeToFitWidth = true
+            cell.addSubview(dateTitle)
+            
+            let clientName = UILabel(frame: CGRect(x: 110, y: 247, width: 80, height: 20))
+            //projectTitle.center = CGPoint(x: 160, y: 285)
+            //projectTitle.font = UIFont(name: projectTitle.font.fontName, size: 20)
+            clientName.backgroundColor = .clear
+            clientName.textAlignment = .right
+            clientName.font = UIFont.preferredFont(forTextStyle: .body)
+            clientName.font.withSize(8)
+            clientName.textColor = .systemBlue
+            clientName.numberOfLines = 1
+            clientName.adjustsFontSizeToFitWidth = true
+            clientName.text = self.myCollectionViewArray[indexPath.row]["clientName"] as? String
+            cell.addSubview(clientName)
+            
         }
         
         cell.addInteraction(interaction)
@@ -1011,8 +1060,10 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         else
         {
             isScansCollectionViewType = true
-            let  projectName = self.myCollectionViewArray[indexPath.row]["name"] as? String
+            self.labelsSwitchToScansView()
             
+            
+            let  projectName = self.myCollectionViewArray[indexPath.row]["name"] as? String
             projectTitle.attributedText =
                 NSMutableAttributedString()
                     .underlined("Projects")
@@ -1021,15 +1072,14 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
             let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
             projectTitle.addGestureRecognizer(tapGesture)
                 
-            self.labelsSwitchToScansView()
-            
-            self.updateDatabases()
             self.myCollectionView.removeFromSuperview()
-            self.setupScanListView()
-//            UIView.animate(withDuration: 1.0, delay: 1.0, options: [], animations: {
-//
-//            }, completion: { (finished: Bool) in
-//            })
+            //myCollectionViewArray.removeAll()
+            
+            let projectID = self.myCollectionViewArray[indexPath.row]["projectId"] as? String
+            self.fetchScansData(projectID: projectID!)
+            //self.updateDatabases()
+            //self.setupScanListView()
+
         }
     }
     
@@ -1063,8 +1113,8 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     @objc func backButtonAction(sender: UIButton!){
         isScansCollectionViewType = false
         UIView.animate(withDuration: 1.0, delay: 0.0, options: [], animations: {
-            self.myCollectionViewArray.removeAll()
             self.myCollectionView.removeFromSuperview()
+            self.myCollectionViewArray.removeAll()
         }, completion: { (finished: Bool) in
             self.fetchProjectsData()
             self.labelsSwitchToProjectsView()
@@ -1134,7 +1184,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                     }
                     self.createCollectionView()
                 }
-                return UIMenu(title: "", children: [shareAction, editAction, deleteAction])
+                return UIMenu(title: "", children: [shareAction, deleteAction])
             }
             else{
                 let editAction = UIAction(title: "Edit Project Name", image: UIImage(systemName: "square.and.pencil")) { _ in
