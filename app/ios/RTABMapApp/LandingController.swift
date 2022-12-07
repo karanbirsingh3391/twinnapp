@@ -458,8 +458,9 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
             self.addSpinner()
             
             let parameters: [String: Any] = [:]
-            //"/storage?path=/Projects/"+projectID+"/Scans"
-            APIHelper.shareInstance.apiCall(endpoint: "/storage?path=/Projects/1234/Scans", parameters: parameters, method: "GET") { responseString, error in
+            ///"/storage?path=/Projects/"+projectID+"/Scans"
+            ///storage?path=/Projects/1234/Scans
+            APIHelper.shareInstance.apiCall(endpoint: "/storage?path=/Projects/"+projectID+"/Scans", parameters: parameters, method: "GET") { responseString, error in
                 //print(responseString)
                 
                 DispatchQueue.main.async {
@@ -479,6 +480,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                                         "name":scan["name"]!,
                                         "display_name":scan["display_name"]!,
                                         "downloadUrl":scan["downloadUrl"]!,
+                                        "dateCreated":scan["createdAt"]!,
                                         "path":scan["path"]!,
                                         "status": "In Progress",
                                         "image": "ProjectSmapleImage.png",
@@ -952,6 +954,34 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         imageView.frame = CGRect(x: 10, y: 50, width: cell.frame.width-20, height: 146)
         cell.addSubview(imageView)
         
+        let dateScanTitle = UILabel(frame: CGRect(x: 12, y: 241, width: 70, height: 12))
+        //projectTitle.center = CGPoint(x: 160, y: 285)
+        //projectTitle.font = UIFont(name: projectTitle.font.fontName, size: 20)
+        dateScanTitle.backgroundColor = .clear
+        dateScanTitle.textAlignment = .left
+        dateScanTitle.font = UIFont.preferredFont(forTextStyle: .body)
+        dateScanTitle.font.withSize(8)
+        dateScanTitle.textColor = .systemGray
+        dateScanTitle.numberOfLines = 1
+        dateScanTitle.adjustsFontSizeToFitWidth = true
+        dateScanTitle.text = "Date Created"
+        cell.addSubview(dateScanTitle)
+        
+        let dateTitle = UILabel(frame: CGRect(x: 12, y: 254, width: 70, height: 15))
+        //projectTitle.center = CGPoint(x: 160, y: 285)
+        //projectTitle.font = UIFont(name: projectTitle.font.fontName, size: 20)
+        dateTitle.backgroundColor = .clear
+        dateTitle.textAlignment = .left
+        dateTitle.font = UIFont.preferredFont(forTextStyle: .body)
+        dateTitle.font.withSize(8)
+        dateTitle.textColor = .systemBlue
+        //dateTitle.text  = URL(fileURLWithPath: databases[indexPath.row].path).lastPathComponent
+        //dateTitle.text = "05/08/2022"
+        dateTitle.numberOfLines = 1
+        dateTitle.adjustsFontSizeToFitWidth = true
+        cell.addSubview(dateTitle)
+        
+        
         if(self.isScansCollectionViewType)
         {
             
@@ -971,38 +1001,15 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
             //        let transform : CGAffineTransform = CGAffineTransformMakeScale(1.0, 3.0)
             //        cellProgressView.transform = transform
             //        cell.addSubview(cellProgressView)
+            
+            let scannedDate = self.myCollectionViewArray[indexPath.row]["dateCreated"] as? String
+            dateTitle.text  = scannedDate?.components(separatedBy: " ")[0]
         }
         else
         {
             imageView.image = UIImage(named: self.myCollectionViewArray[indexPath.row]["image"] as! String)!
             
-            let dateScanTitle = UILabel(frame: CGRect(x: 12, y: 241, width: 70, height: 12))
-            //projectTitle.center = CGPoint(x: 160, y: 285)
-            //projectTitle.font = UIFont(name: projectTitle.font.fontName, size: 20)
-            dateScanTitle.backgroundColor = .clear
-            dateScanTitle.textAlignment = .left
-            dateScanTitle.font = UIFont.preferredFont(forTextStyle: .body)
-            dateScanTitle.font.withSize(8)
-            dateScanTitle.textColor = .systemGray
-            dateScanTitle.numberOfLines = 1
-            dateScanTitle.adjustsFontSizeToFitWidth = true
-            dateScanTitle.text = "Date Created"
-            cell.addSubview(dateScanTitle)
-            
-            let dateTitle = UILabel(frame: CGRect(x: 12, y: 254, width: 70, height: 15))
-            //projectTitle.center = CGPoint(x: 160, y: 285)
-            //projectTitle.font = UIFont(name: projectTitle.font.fontName, size: 20)
-            dateTitle.backgroundColor = .clear
-            dateTitle.textAlignment = .left
-            dateTitle.font = UIFont.preferredFont(forTextStyle: .body)
-            dateTitle.font.withSize(8)
-            dateTitle.textColor = .systemBlue
-            //dateTitle.text  = URL(fileURLWithPath: databases[indexPath.row].path).lastPathComponent
             dateTitle.text  = self.myCollectionViewArray[indexPath.row]["dateCreated"] as? String
-            //dateTitle.text = "05/08/2022"
-            dateTitle.numberOfLines = 1
-            dateTitle.adjustsFontSizeToFitWidth = true
-            cell.addSubview(dateTitle)
             
             let clientName = UILabel(frame: CGRect(x: 110, y: 247, width: 80, height: 20))
             //projectTitle.center = CGPoint(x: 160, y: 285)
