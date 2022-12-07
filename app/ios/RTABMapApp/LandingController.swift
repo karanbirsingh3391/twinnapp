@@ -44,6 +44,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     public var createNewProjectView: CreateNewProjectView!
     public var myProfileView: ProfileView!
     private var myProfileDictionary: [String: Any] = [:]
+    public var projectID: String = ""
     //private var loginView = UIView()
     
 
@@ -236,7 +237,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         return UserDefaults.standard.object(forKey: key) != nil
     }
     
-    func updateDatabases()
+    func updateDatabases(projectID: String)
     {
         databases.removeAll()
         myCollectionViewArray.removeAll()
@@ -251,14 +252,22 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                     .map { $0.0 } // extract file names
             databases = data.filter{ $0.pathExtension == "db" && $0.lastPathComponent != RTABMAP_TMP_DB && $0.lastPathComponent != RTABMAP_RECOVERY_DB }
             print(databases)
-            //file:///private/var/mobile/Containers/Data/Application/FBBEA336-4AC8-431D-A440-28E4231FAA75/Documents/Door.db
-            
+            var tempArray = [URL]()
+            for path in databases{
+                let filteredPath:String = path.lastPathComponent.components(separatedBy: "-twinn-")[0]
+                if filteredPath == projectID {
+                    tempArray.append(path)
+                }
+            }
+            databases = tempArray
+            ///file:///private/var/mobile/Containers/Data/Application/FBBEA336-4AC8-431D-A440-28E4231FAA75/Documents/Door.db
+            ///file:///private/var/mobile/Containers/Data/Application/4ACBF65C-BF27-4D72-A622-CB974952573D/Documents/Cup-twinn-30d56a6c-4afd-4a51-8e95-a56db94d410d.db
             if(isScansCollectionViewType)
             {
                 if(databases.count > 0)
                 {
                     for i in 0...databases.count-1 {
-                        myCollectionViewArray.insert(["name": URL(fileURLWithPath: databases[i].path).lastPathComponent.components(separatedBy: ".")[0], "clientName":"", "dateCreated":(try! URL(fileURLWithPath: databases[i].path).resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate!.getFormattedDate(format: "dd/MM/yyyy")), "status": "In Progress", "image": databases[i].path], at: i)
+                        myCollectionViewArray.insert(["name": URL(fileURLWithPath: databases[i].path).lastPathComponent.components(separatedBy: ".")[0], "clientName":"","image": "ProjectSmapleImage.png", "dateCreated":(try! URL(fileURLWithPath: databases[i].path).resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate!.getFormattedDate(format: "dd/MM/yyyy")), "status": "In Progress", "image2": databases[i].path], at: i)
                 }
                 
                 }
@@ -323,7 +332,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                         catch {
                             print("Error renaming file \(fileURL) to \(filePath)")
                         }
-                        self.updateDatabases()
+                        self.updateDatabases(projectID: "")
                     }
                     alert.addAction(yes)
                     let no = UIAlertAction(title: "No", style: .cancel) {
@@ -945,7 +954,8 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         scanTitle.font.withSize(8)
         scanTitle.textColor = .gray
         //scanTitle.text = "Scan "+String(indexPath.row+1)
-        scanTitle.text = self.myCollectionViewArray[indexPath.row]["name"] as? String
+        let itemName = self.myCollectionViewArray[indexPath.row]["name"] as? String
+        
         cell.addSubview(scanTitle)
         
         //let imageName = "SampleScan.png"
@@ -977,6 +987,8 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         dateTitle.textColor = .systemBlue
         //dateTitle.text  = URL(fileURLWithPath: databases[indexPath.row].path).lastPathComponent
         //dateTitle.text = "05/08/2022"
+        let scannedDate = self.myCollectionViewArray[indexPath.row]["dateCreated"] as? String
+        dateTitle.text  = scannedDate?.components(separatedBy: " ")[0]
         dateTitle.numberOfLines = 1
         dateTitle.adjustsFontSizeToFitWidth = true
         cell.addSubview(dateTitle)
@@ -1002,14 +1014,12 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
             //        cellProgressView.transform = transform
             //        cell.addSubview(cellProgressView)
             
-            let scannedDate = self.myCollectionViewArray[indexPath.row]["dateCreated"] as? String
-            dateTitle.text  = scannedDate?.components(separatedBy: " ")[0]
+            scanTitle.text = itemName?.components(separatedBy: "-twinn-")[1]
         }
         else
         {
             imageView.image = UIImage(named: self.myCollectionViewArray[indexPath.row]["image"] as! String)!
-            
-            dateTitle.text  = self.myCollectionViewArray[indexPath.row]["dateCreated"] as? String
+            scanTitle.text = itemName?.components(separatedBy: "-twinn-")[0]
             
             let clientName = UILabel(frame: CGRect(x: 110, y: 247, width: 80, height: 20))
             //projectTitle.center = CGPoint(x: 160, y: 285)
@@ -1055,6 +1065,8 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         print("You selected cell #\(indexPath.item)!")
         NotificationCenter.default.post(name: NSNotification.Name("com.user.projectcell.tapped"), object: nil)
        
+        let projectID = self.myCollectionViewArray[indexPath.row]["projectId"] as? String
+        
         if(isScansCollectionViewType)
         {
             
@@ -1062,6 +1074,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
             let nextViewController = storyBoard.instantiateViewController(withIdentifier: "GLKitViewController") as! ViewController
             //self.present(nextViewController, animated:true, completion:nil)
             nextViewController.passedIndex = indexPath.row
+            nextViewController.projectID = projectID
             self.show(nextViewController, sender: currentDatabaseIndex)
         }
         else
@@ -1082,17 +1095,19 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
             self.myCollectionView.removeFromSuperview()
             //myCollectionViewArray.removeAll()
             
-            let projectID = self.myCollectionViewArray[indexPath.row]["projectId"] as? String
-            self.fetchScansData(projectID: projectID!)
-            //self.updateDatabases()
-            //self.setupScanListView()
+            self.projectID = projectID!
+//            self.fetchScansData(projectID: projectID!)
+   
+            self.updateDatabases(projectID: self.projectID)
+            self.setupScanListView()
 
         }
     }
     
     func createCollectionView(){
-        self.updateDatabases()
         self.myCollectionView.removeFromSuperview()
+        self.updateDatabases(projectID: self.projectID)
+        
         UIView.animate(withDuration: 1.0, delay: 1.0, options: [], animations: {
             self.setupScanListView()
         }, completion: { (finished: Bool) in
@@ -1108,6 +1123,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
             let nextViewController = storyBoard.instantiateViewController(withIdentifier: "GLKitViewController") as! ViewController
             //self.present(nextViewController, animated:true, completion:nil)
             //nextViewController.passedIndex = currentDatabaseIndex
+            nextViewController.projectID = self.projectID
             self.show(nextViewController, sender: currentDatabaseIndex)
         }
         else
@@ -1118,6 +1134,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     }
     
     @objc func backButtonAction(sender: UIButton!){
+        NotificationCenter.default.post(name: NSNotification.Name("com.user.projectcell.tapped"), object: nil)
         isScansCollectionViewType = false
         UIView.animate(withDuration: 1.0, delay: 0.0, options: [], animations: {
             self.myCollectionView.removeFromSuperview()

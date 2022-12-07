@@ -19,6 +19,7 @@ extension Array {
 class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIPickerViewDataSource, UIPickerViewDelegate, CLLocationManagerDelegate {
     
     var passedIndex: Int?
+    var projectID: String!
     private let session = ARSession()
     private var locationManager: CLLocationManager?
     private var mLastKnownLocation: CLLocation?
@@ -1589,9 +1590,13 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
         let save = UIAlertAction(title: "Save", style: .default) { (alertAction) in
             let textField = alert.textFields![0] as UITextField
             if textField.text != "" {
-                //Read TextFields text data
-                let fileName = textField.text!+".db"
+                
+                let fileName = self.projectID+"-twinn-"+textField.text!+".db" //karan
+                //let fileName = textField.text!+"-twinn-"+self.projectID+".db"
                 let filePath = self.getDocumentDirectory().appendingPathComponent(fileName).path
+                ////var/mobile/Containers/Data/Application/6D67D403-A124-43E5-A2C4-38C3739EFD46/Documents/Sam-twinn-46fe5c31-bf41-4b16-82b3-1d516fe53b84.db
+                print(self.projectID)
+                print(filePath)
                 if FileManager.default.fileExists(atPath: filePath) {
                     let alert = UIAlertController(title: "File Already Exists", message: "Do you want to overwrite the existing file?", preferredStyle: .alert)
                     let yes = UIAlertAction(title: "Yes", style: .default) {
@@ -2225,6 +2230,7 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
                     }
                     .sorted(by: { $0.1 > $1.1 }) // sort descending modification dates
                     .map { $0.0 } // extract file names
+            print(data)
             databases = data.filter{ $0.pathExtension == "db" && $0.lastPathComponent != RTABMAP_TMP_DB && $0.lastPathComponent != RTABMAP_RECOVERY_DB }
             
         } catch {
