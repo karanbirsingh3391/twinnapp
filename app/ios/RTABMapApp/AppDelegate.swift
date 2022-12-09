@@ -7,6 +7,7 @@
 
 import UIKit
 import ARKit
+import FirebaseCore
 
 func setDefaultsFromSettingsBundle() {
     
@@ -42,7 +43,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        
         window?.overrideUserInterfaceStyle = .light
         // Always set Version to default
         let defaults = UserDefaults.standard
@@ -57,6 +57,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             let storyboard = UIStoryboard(name: "Main", bundle: nil)
             window?.rootViewController = storyboard.instantiateViewController(withIdentifier: "unsupportedDeviceMessage")
         }
+        FirebaseApp.configure()
         return true
     }
 
