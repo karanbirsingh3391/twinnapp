@@ -197,8 +197,13 @@ class LoginView: UIView, UITextFieldDelegate {
         UIView.animate(withDuration: 0.5) {
             self.loginOptionsView.frame = CGRect(x: 0, y:0, width: self.frame.width, height: self.frame.height)
         }
-        
     }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
+    }
+    
     
     func showToast(message : String, font: UIFont) {
 

@@ -108,6 +108,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         mySearchBar.sizeToFit()
         mySearchBar.isTranslucent = false
         mySearchBar.backgroundImage = UIImage()
+        //mySearchBar.returnKeyType = .done
         mySearchBar.delegate = self
         //navigationItem.titleView = searchBar
         self.view.addSubview(mySearchBar)
@@ -835,7 +836,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
         print("searchBarTextDidEndEditing")
     }
-    
+            
     func searchBar(_ searchBar: UISearchBar, textDidChange textSearched: String) {
         print(textSearched)
         self.myCollectionViewArray = self.myOriginalArray
@@ -844,7 +845,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
             var myArray = [[String:Any]]()
             for i in 0...self.myCollectionViewArray.count-1{
                 let val = self.myCollectionViewArray[i]["name"] as? String
-                var result = val?.lowercased().contains(textSearched)
+                let result = val?.lowercased().contains(textSearched.lowercased())
                 if(result!){
                     myArray.append(self.myCollectionViewArray[i])
                 }

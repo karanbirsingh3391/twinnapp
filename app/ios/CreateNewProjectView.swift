@@ -284,6 +284,11 @@ class CreateNewProjectView: UIView, UITextFieldDelegate, UITableViewDelegate, UI
         }
     }
     
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
+    }
+    
     func textFieldDidChangeSelection(_ textField: UITextField) {
         print("end editing")
     }

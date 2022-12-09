@@ -692,6 +692,8 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
             actionOptimizeEnabled = mState != .STATE_WELCOME && mMapNodes>0
             actionSettingsEnabled = true
         }
+        
+        libraryButton.isHidden = true
 
         let view = self.view as? GLKView
         if(mState != .STATE_MAPPING && mState != .STATE_CAMERA && mState != .STATE_VISUALIZING_CAMERA)
