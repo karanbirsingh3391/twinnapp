@@ -1506,6 +1506,7 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
                             indicator = UIActivityIndicatorView(style: .large)
                             indicator?.frame = CGRect(x: 0.0, y: 0.0, width: 60.0, height: 60.0)
                             indicator?.center = self.view.center
+                            indicator?.color = .white
                             self.view.addSubview(indicator!)
                             indicator?.bringSubviewToFront(self.view)
                             
@@ -1649,6 +1650,7 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
         let indicator: UIActivityIndicatorView = UIActivityIndicatorView(style: .large)
         indicator.frame = CGRect(x: 0.0, y: 0.0, width: 60.0, height: 60.0)
         indicator.center = view.center
+        indicator.color = .white
         view.addSubview(indicator)
         indicator.bringSubviewToFront(view)
         
@@ -1710,6 +1712,7 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
                 indicator = UIActivityIndicatorView(style: .large)
                 indicator?.frame = CGRect(x: 0.0, y: 0.0, width: 60.0, height: 60.0)
                 indicator?.center = self.view.center
+                indicator?.color = .white
                 self.view.addSubview(indicator!)
                 indicator?.bringSubviewToFront(self.view)
                 

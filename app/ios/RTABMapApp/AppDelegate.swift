@@ -43,6 +43,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
+        window?.overrideUserInterfaceStyle = .light
         // Always set Version to default
         let defaults = UserDefaults.standard
         defaults.removeObject(forKey: "Version")

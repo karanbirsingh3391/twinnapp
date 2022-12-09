@@ -51,6 +51,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     // MARK: - UI Rendering Functions
     override func viewDidLoad() {
         super.viewDidLoad()
+        overrideUserInterfaceStyle = .light
         self.view.isUserInteractionEnabled = true
         isScansCollectionViewType = false
         setupBaseElements()
