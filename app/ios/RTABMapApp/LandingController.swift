@@ -32,7 +32,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     private let menuViewProjectsButton = UIButton()
     private let newScanButton = UIButton()
     private let profileButton = UIButton()
-    private let backButton = UIButton()
+    private var backButton: UIButton!
     private let helpButton = UIButton()
     private var mySearchBar = UISearchBar()
     private var myCollectionView:UICollectionView!
@@ -57,7 +57,6 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         setupBaseElements()
         fetchProfile()
         fetchProjectsData()
-        
     }
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -86,7 +85,17 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     }
 
     func setupBaseElements(){
+        
+        backButton = UIButton(frame: CGRect(x: 100, y: 50, width: 20, height: 20))
+        //backButton.setImage(UIImage(systemName: "arrowshape.left.fill"), for: .normal)
+        backButton.setImage(UIImage(named: "BackButton"), for: .normal)
+        //backButton.setImage(UIImage(named: "BackButton"), for: .highlighted)
+        backButton.addTarget(self, action: #selector(backButtonAction), for: .touchUpInside)
+        self.view.addSubview(backButton)
+        backButton.isHidden = true
+        
         projectTitle = UILabel(frame: CGRect(x: 140, y: 50, width: 400, height: 21))
+        projectTitle.backgroundColor = .clear
         //projectTitle.center = CGPoint(x: 160, y: 285)
         //projectTitle.font = UIFont(name: projectTitle.font.fontName, size: 20)
         projectTitle.textAlignment = .left
@@ -139,7 +148,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
 //        menuViewProjectsButton.setImage(UIImage(named: "ProjectsButtonImage1"), for: .highlighted)
 //        menuViewProjectsButton.contentVerticalAlignment = .center
 //        menuViewProjectsButton.alignImageAndTitleVertically()
-        menuViewProjectsButton.addTarget(self, action: #selector(backButtonAction), for: .touchUpInside)
+        menuViewProjectsButton.addTarget(self, action: #selector(projectsButtonAction), for: .touchUpInside)
         menuView.addSubview(menuViewProjectsButton)
         
         let buttonImageView = UIImageView(image: UIImage(named: "ProjectsButtonImage.png")!)
@@ -172,14 +181,6 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         //helpButton.setImage(UIImage(named: "HelpIcon"), for: .highlighted)
         helpButton.addTarget(self, action: #selector(logoutButtonAction), for: .touchUpInside)
         //menuView.addSubview(helpButton)
-
-        backButton.frame = CGRect(x: 100, y: 50, width: 30, height: 30)
-        //backButton.backgroundColor = .systemGreen
-        backButton.setImage(UIImage(systemName: "arrowshape.left.fill"), for: .normal)
-        //backButton.setImage(UIImage(named: "BackButton"), for: .highlighted)
-        backButton.addTarget(self, action: #selector(backButtonAction), for: .touchUpInside)
-        self.view.addSubview(backButton)
-        backButton.isHidden = true
         
         newScanButton.frame = CGRect(x: screenWidth-156, y: screenHeight-62, width: 146, height: 52)
         newScanButton.backgroundColor = .clear
@@ -879,8 +880,9 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         cell.layer.shadowOffset = .zero
         cell.layer.shadowRadius = 2
         
-        let cellOptionsButton = UIButton(frame: CGRect(x: cell.frame.width-25, y: 16, width: 20, height: 20))
+        let cellOptionsButton = UIButton(frame: CGRect(x: cell.frame.width-45, y: 16, width: 40, height: 20))
         cellOptionsButton.backgroundColor = .clear
+        cellOptionsButton.imageView?.frame = CGRect(x: 10, y: 0, width: cellOptionsButton.frame.width-20, height: cellOptionsButton.frame.height-10)
         cellOptionsButton.imageView?.contentMode = .scaleAspectFit
         cellOptionsButton.setImage(UIImage(named: "CellOptionsButton"), for: .normal)
         cellOptionsButton.setImage(UIImage(named: "CellOptionsButton"), for: .highlighted)
@@ -1091,8 +1093,8 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                     .underlined("Projects")
                     .normal(" | ")
                     .bold(projectName!)
-            let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
-            projectTitle.addGestureRecognizer(tapGesture)
+            //let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
+            //projectTitle.addGestureRecognizer(tapGesture)
                 
             self.myCollectionView.removeFromSuperview()
             //myCollectionViewArray.removeAll()
@@ -1136,6 +1138,19 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     }
     
     @objc func backButtonAction(sender: UIButton!){
+        print("back button clicked")
+        NotificationCenter.default.post(name: NSNotification.Name("com.user.projectcell.tapped"), object: nil)
+        isScansCollectionViewType = false
+        UIView.animate(withDuration: 1.0, delay: 0.0, options: [], animations: {
+            self.myCollectionView.removeFromSuperview()
+            self.myCollectionViewArray.removeAll()
+        }, completion: { (finished: Bool) in
+            self.fetchProjectsData()
+            self.labelsSwitchToProjectsView()
+        })
+    }
+    
+    @objc func projectsButtonAction(sender: UIButton!){
         NotificationCenter.default.post(name: NSNotification.Name("com.user.projectcell.tapped"), object: nil)
         isScansCollectionViewType = false
         UIView.animate(withDuration: 1.0, delay: 0.0, options: [], animations: {
