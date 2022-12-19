@@ -7,6 +7,7 @@
 
 import Foundation
 import UIKit
+import Lottie
 
 class LandingController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, UIContextMenuInteractionDelegate, UISearchBarDelegate, UICollectionViewDelegateFlowLayout {
     
@@ -19,7 +20,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     let RTABMAP_EXPORT_DIR = "Export"
     let reuseIdentifier = "cell"
     
-
+    private var animationView: LottieAnimationView?
     public var screenWidth: CGFloat {
         return UIScreen.main.bounds.width
     }
@@ -1274,12 +1275,26 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         spinnerView.center = self.view.center
         self.view.addSubview(spinnerView)
         spinnerView.startAnimating()
+        
+//        animationView = .init(name: "Lottie-loader")
+//        animationView!.frame = self.view.bounds
+//        animationView!.contentMode = .scaleAspectFit
+//        animationView!.loopMode = .loop
+//        animationView!.animationSpeed = 0.5
+//        self.view.addSubview(animationView!)
+//        animationView!.play()
+        
+        
         self.view.isUserInteractionEnabled = false
     }
     
     func removeSpinner(){
         self.spinnerView.stopAnimating()
         self.spinnerView.removeFromSuperview()
+        
+//        animationView?.stop()
+//        animationView?.removeFromSuperview()
+        
         self.view.isUserInteractionEnabled = true
     }
     
