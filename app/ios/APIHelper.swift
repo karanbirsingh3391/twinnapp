@@ -36,8 +36,6 @@ final public class APIHelper: NSObject {
         let token_type: String
     }
     
-    
-    
     func User(endpoint:String, parameters:[String: Any], method: String, accessToken:Bool, completion: @escaping(String, Error?) -> ()){
         
         let url = URL(string: baseURLAuth+endpoint)!
@@ -121,9 +119,7 @@ final public class APIHelper: NSObject {
         }
         
         //request.httpBody = try! JSONSerialization.data(withJSONObject: parameters)
-        
-        
-        
+
         print(request.httpMethod!)
         print(request.url!)
         print(request.allHTTPHeaderFields!)
@@ -172,15 +168,27 @@ final public class APIHelper: NSObject {
         task.resume()
     }
     
-    func uploadScan(endpoint:String, fileName: String, scanName: String, parameters:[String: Any], method: String ,completion: @escaping(String, Error?) -> ()){
+    func uploadScan(endpoint:String, fileName: String, filePath: URL, scanName: String, parameters:[String: Any], method: String ,completion: @escaping(String, Error?) -> ()){
         
         print("---------------------File Path--------------------------")
-        print(fileName)
+        print(filePath)
         print("---------------------Endpoint--------------------------")
         print(endpoint)
+        print(getDocumentDirectory())
+        
+//        let filePath = getDocumentDirectory().appendingPathComponent(fileName).path
+//        print(filePath)
+//        if FileManager.default.fileExists(atPath: filePath) {
+//            
+//        }
+        
+        let fileURLs = try! FileManager.default.contentsOfDirectory(at: getDocumentDirectory(), includingPropertiesForKeys: nil)
+        print("---------------------File URLs--------------------------")
+        print(fileURLs)
+        let scanData = try! Data(contentsOf:filePath)
         
         
-        let imageData = "Image Data".data(using: .utf8)!
+        //let imageData = "Image Data".data(using: .utf8)!
         let boundary = "Boundary-\(UUID().uuidString)"
         
         let url = URL(string: baseURLCRM+endpoint)!
@@ -194,11 +202,11 @@ final public class APIHelper: NSObject {
         request.httpMethod = method
        
         let httpBody = NSMutableData()
-        httpBody.appendString(convertFormField(named: "DisplayName", value: "scanName", using: boundary))
+        httpBody.appendString(convertFormField(named: "DisplayName", value: scanName, using: boundary))
         httpBody.append(convertFileData(fieldName: "files",
-                                        fileName: scanName+".db",
+                                        fileName: fileName,
                                         mimeType: "application/json",
-                                        fileData: imageData,
+                                        fileData: scanData,
                                         using: boundary))
 
         httpBody.appendString("--\(boundary)--")
@@ -286,6 +294,7 @@ final public class APIHelper: NSObject {
         
     }
     
+    // MARK: - HelperFunctions
     func convertFormField(named name: String, value: String, using boundary: String) -> String {
       var fieldString = "--\(boundary)\r\n"
       fieldString += "Content-Disposition: form-data; name=\"\(name)\"\r\n"
@@ -307,8 +316,13 @@ final public class APIHelper: NSObject {
       return data as Data
     }
     
+    func getDocumentDirectory() -> URL {
+        return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+    }
+    
 }
 
+// MARK: - NSMutableDataExtension
 extension NSMutableData {
   func appendString(_ string: String) {
     if let data = string.data(using: .utf8) {
@@ -317,6 +331,7 @@ extension NSMutableData {
   }
 }
 
+// MARK: - DictionaryExtension
 extension Dictionary {
     func percentEncoded() -> Data? {
         map { key, value in
@@ -329,6 +344,7 @@ extension Dictionary {
     }
 }
 
+// MARK: - CharacterSetExtension
 extension CharacterSet {
     static let urlQueryValueAllowed: CharacterSet = {
         let generalDelimitersToEncode = ":#[]@" // does not include "?" or "/" due to RFC 3986 - Section 3.4

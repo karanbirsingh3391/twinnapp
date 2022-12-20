@@ -28,13 +28,6 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         return UIScreen.main.bounds.height
     }
     
-    //File Upload Variables
-    let uploadService = UploadService()
-    lazy var uploadSession: URLSession = {
-    let configuration = URLSessionConfiguration.default
-    return URLSession(configuration: configuration, delegate: self, delegateQueue: .main)
-     }()
-    
     private var projectTitle = UILabel()
     private let menuView = UIView()
     private let menuViewProjectsButton = UIButton()
@@ -66,8 +59,6 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         fetchProfile()
         fetchProjectsData()
         
-        //File Upload Functions
-        uploadService.uploadSession = uploadSession
     }
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -281,7 +272,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                 {
                     for i in 0...databases.count-1 {
                         myCollectionViewArray.insert(["name": URL(fileURLWithPath: databases[i].path).lastPathComponent.components(separatedBy: ".")[0], "clientName":"","image": "ProjectSmapleImage.png", "dateCreated":(try! URL(fileURLWithPath: databases[i].path).resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate!.getFormattedDate(format: "dd/MM/yyyy")), "status": "In Progress", "image2": databases[i].path], at: i)
-                }
+                    }
                 
                 }
             }
@@ -499,7 +490,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                                 for scan in scans {
                                     self.myCollectionViewArray.append([
                                         "Id": scan["Id"]!,
-                                        "name":scan["display_name"]!,
+                                        "name":scan["name"]!,
                                         "display_name":scan["display_name"]!,
                                         "downloadUrl":scan["downloadUrl"]!,
                                         "dateCreated":scan["createdAt"]!,
@@ -526,7 +517,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         }
     }
     
-    func uploadScan(projectID: String, fileName: String, scanName: String){
+    func uploadScan(projectID: String, fileName: String, filePath: URL, scanName: String){
 
         if (isKeyPresentInUserDefaults(key: "access_token"))
         {
@@ -536,7 +527,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
             
             //APIHelper.shareInstance.uploadScan3()
             
-            APIHelper.shareInstance.uploadScan(endpoint: "/storage?file_location=/Projects/"+projectID+"/Scans", fileName: fileName, scanName: scanName, parameters: parameters, method: "POST") { responseString, error in
+            APIHelper.shareInstance.uploadScan(endpoint: "/storage?file_location=/Projects/"+projectID+"/Scans", fileName: fileName, filePath: filePath, scanName: scanName, parameters: parameters, method: "POST") { responseString, error in
                 //print(responseString)
                 
                 DispatchQueue.main.async {
@@ -1162,6 +1153,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
             
             self.projectID = projectID!
             
+            
             //online mode
             //self.fetchScansData(projectID: projectID!)
    
@@ -1272,10 +1264,11 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         //URL(fileURLWithPath: databases[sender.tag].path).lastPathComponent.components(separatedBy: ".")[0]
         
         let fileName = URL(fileURLWithPath: databases[sender.tag].path).lastPathComponent
+        let filePath = URL(fileURLWithPath: databases[sender.tag].path)
         let itemName = self.myCollectionViewArray[sender.tag]["name"] as? String
         let scanName = itemName?.components(separatedBy: "-twinn-")[1]
         
-        uploadScan(projectID: self.projectID, fileName: fileName, scanName: scanName!)
+        uploadScan(projectID: self.projectID, fileName: fileName, filePath: filePath, scanName: scanName!)
         
 //        let file = File(link: "https://file.io", data: databases[sender.tag].path);
 //        uploadService.start(file: file)
@@ -1444,45 +1437,6 @@ extension LandingController: CreateNewProjectViewDelegate {
     
 }
 
-// MARK: - URLSessionDataDelegateExtension
-extension LandingController: URLSessionDataDelegate {
-    
-    // Error received
-    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        if let err = error {
-            print("Error: \(err.localizedDescription)")
-     
-        }
-    }
-    
-    // Response received
-    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse, completionHandler: (URLSession.ResponseDisposition)) {
-        print("didReceive response")
-    }
-    
-    // Data received
-    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
-        print("didReceive data")
- 
-        // Convert to JSON
-        do {
-            let jsonResult = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers) as? NSDictionary
-            
-            print(jsonResult)
-            let file = File(success: jsonResult!["success"] as! Bool, key: jsonResult!["key"] as! String, link: jsonResult!["link"] as! String, expiry: jsonResult!["expiry"] as! String)
-        }
-        catch {
-            print("Error converting server response to json")
-        }
- 
-        // Print to UI
-        if let responseText = String(data: data, encoding: .utf8) {
-            print(responseText)
- 
- 
-        }
-    }
-}
 
 // MARK: - NSMutableAttributedStringExtension
 extension NSMutableAttributedString {
