@@ -28,6 +28,13 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         return UIScreen.main.bounds.height
     }
     
+    //File Upload Variables
+    let uploadService = UploadService()
+    lazy var uploadSession: URLSession = {
+    let configuration = URLSessionConfiguration.default
+    return URLSession(configuration: configuration, delegate: self, delegateQueue: .main)
+     }()
+    
     private var projectTitle = UILabel()
     private let menuView = UIView()
     private let menuViewProjectsButton = UIButton()
@@ -58,6 +65,9 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         setupBaseElements()
         fetchProfile()
         fetchProjectsData()
+        
+        //File Upload Functions
+        uploadService.uploadSession = uploadSession
     }
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -264,8 +274,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                 }
             }
             databases = tempArray
-            ///file:///private/var/mobile/Containers/Data/Application/FBBEA336-4AC8-431D-A440-28E4231FAA75/Documents/Door.db
-            ///file:///private/var/mobile/Containers/Data/Application/4ACBF65C-BF27-4D72-A622-CB974952573D/Documents/Cup-twinn-30d56a6c-4afd-4a51-8e95-a56db94d410d.db
+            ///file:///private/var/mobile/Containers/Data/Application/12EF35B3-5CFC-4453-9B7D-F6BBD634096F/Documents/46fe5c31-bf41-4b16-82b3-1d516fe53b84-twinn-Cream.db
             if(isScansCollectionViewType)
             {
                 if(databases.count > 0)
@@ -490,7 +499,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                                 for scan in scans {
                                     self.myCollectionViewArray.append([
                                         "Id": scan["Id"]!,
-                                        "name":scan["name"]!,
+                                        "name":scan["display_name"]!,
                                         "display_name":scan["display_name"]!,
                                         "downloadUrl":scan["downloadUrl"]!,
                                         "dateCreated":scan["createdAt"]!,
@@ -514,6 +523,45 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         {
             setupLoginView()
             //self.showToast(message: "Your session has expired, please login again.", font: UIFont.preferredFont(forTextStyle: .body))
+        }
+    }
+    
+    func uploadScan(projectID: String, filePath: String){
+
+        
+        if (isKeyPresentInUserDefaults(key: "access_token"))
+        {
+            myCollectionViewArray.removeAll()
+            self.addSpinner()
+            
+            let parameters: [String: Any] = [:]
+            
+            APIHelper.shareInstance.uploadScan2()
+            
+//            APIHelper.shareInstance.uploadScan(endpoint: "/storage?file_location=/Projects/"+projectID+"/Scans", filePath: filePath, parameters: parameters, method: "POST") { responseString, error in
+//                //print(responseString)
+//                
+//                DispatchQueue.main.async {
+//                    self.removeSpinner()
+//                    
+//                    if(responseString == ""){
+//                        self.showToast(message: "Something went wrong.", font: UIFont.preferredFont(forTextStyle: .body))
+//                    }
+//                    else{
+//                        let dict = self.convertToDictionary(text: responseString)
+//                
+//                        print(self.myCollectionViewArray)
+//                        if(!self.myCollectionViewArray.isEmpty){
+//                            self.setupScanListView()
+//                        }
+//                        
+//                    }
+//                }
+//            }
+        }
+        else
+        {
+            self.showToast(message: "Upload failed.", font: UIFont.preferredFont(forTextStyle: .body))
         }
     }
     
@@ -860,8 +908,6 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
 
     }
     
-
-    
     // MARK: - UICollectionViewDataSource protocol
     
     // tell the collection view how many cells to make
@@ -1019,7 +1065,21 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
             //        cellProgressView.transform = transform
             //        cell.addSubview(cellProgressView)
             
+//            guard case scanTitle.text = itemName?.components(separatedBy: "-twinn-")[1] else {
+//                scanTitle.text = itemName
+//            }
             scanTitle.text = itemName?.components(separatedBy: "-twinn-")[1]
+            
+            let exportButton = UIButton(frame: CGRect(x: cell.frame.width-75, y: 13, width: 30, height: 30))
+            exportButton.backgroundColor = .clear
+            exportButton.imageView?.contentMode = .scaleAspectFit
+            exportButton.setImage(UIImage(named: "ExportButton"), for: .normal)
+            exportButton.setImage(UIImage(named: "ExportButton"), for: .highlighted)
+            exportButton.addTarget(self, action: #selector(exportButtonAction), for: .touchUpInside)
+            exportButton.addInteraction(interaction)
+            exportButton.tag = indexPath.row
+            exportButton.showsMenuAsPrimaryAction = true
+            cell.addSubview(exportButton)
         }
         else
         {
@@ -1101,8 +1161,11 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
             //myCollectionViewArray.removeAll()
             
             self.projectID = projectID!
-//            self.fetchScansData(projectID: projectID!)
+            
+            //online mode
+            //self.fetchScansData(projectID: projectID!)
    
+            //offline mode
             self.updateDatabases(projectID: self.projectID)
             self.setupScanListView()
 
@@ -1202,6 +1265,16 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         
     }
     
+    @objc func exportButtonAction(sender: UIButton!){
+        print("export button clicked")
+        print(databases[sender.tag].path)
+        uploadScan(projectID: self.projectID, filePath: databases[sender.tag].path)
+        
+//        let file = File(link: "https://file.io", data: databases[sender.tag].path);
+//        uploadService.start(file: file)
+        
+    }
+    
     // MARK: - Context Menu Actions
     
     func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
@@ -1276,15 +1349,6 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         self.view.addSubview(spinnerView)
         spinnerView.startAnimating()
         
-//        animationView = .init(name: "Lottie-loader")
-//        animationView!.frame = self.view.bounds
-//        animationView!.contentMode = .scaleAspectFit
-//        animationView!.loopMode = .loop
-//        animationView!.animationSpeed = 0.5
-//        self.view.addSubview(animationView!)
-//        animationView!.play()
-        
-        
         self.view.isUserInteractionEnabled = false
     }
     
@@ -1292,8 +1356,25 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         self.spinnerView.stopAnimating()
         self.spinnerView.removeFromSuperview()
         
-//        animationView?.stop()
-//        animationView?.removeFromSuperview()
+        self.view.isUserInteractionEnabled = true
+    }
+    
+    // MARK: - Lottie Animation Functions
+    func addLottieAnimation(){
+        animationView = .init(name: "Lottie-loader")
+        animationView!.frame = self.view.bounds
+        animationView!.contentMode = .scaleAspectFit
+        animationView!.loopMode = .loop
+        animationView!.animationSpeed = 0.5
+        self.view.addSubview(animationView!)
+        animationView!.play()
+                
+        self.view.isUserInteractionEnabled = false
+    }
+    
+    func removeLottieAnimation(){
+        animationView?.stop()
+        animationView?.removeFromSuperview()
         
         self.view.isUserInteractionEnabled = true
     }
@@ -1354,6 +1435,46 @@ extension LandingController: CreateNewProjectViewDelegate {
         showToast(message: message, font: UIFont.preferredFont(forTextStyle: .body))
     }
     
+}
+
+// MARK: - URLSessionDataDelegateExtension
+extension LandingController: URLSessionDataDelegate {
+    
+    // Error received
+    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        if let err = error {
+            print("Error: \(err.localizedDescription)")
+     
+        }
+    }
+    
+    // Response received
+    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse, completionHandler: (URLSession.ResponseDisposition)) {
+        print("didReceive response")
+    }
+    
+    // Data received
+    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+        print("didReceive data")
+ 
+        // Convert to JSON
+        do {
+            let jsonResult = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions.mutableContainers) as? NSDictionary
+            
+            print(jsonResult)
+            let file = File(success: jsonResult!["success"] as! Bool, key: jsonResult!["key"] as! String, link: jsonResult!["link"] as! String, expiry: jsonResult!["expiry"] as! String)
+        }
+        catch {
+            print("Error converting server response to json")
+        }
+ 
+        // Print to UI
+        if let responseText = String(data: data, encoding: .utf8) {
+            print(responseText)
+ 
+ 
+        }
+    }
 }
 
 // MARK: - NSMutableAttributedStringExtension

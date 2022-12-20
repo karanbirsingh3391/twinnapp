@@ -182,6 +182,10 @@
 		A9334B2B29439DEB0058EB99 /* FirebaseStorageCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = A9334B2A29439DEB0058EB99 /* FirebaseStorageCombine-Community */; };
 		A9334B2E2950740F0058EB99 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = A9334B2D2950740F0058EB99 /* Lottie */; };
 		A9334B302950767F0058EB99 /* Lottie-loader.json in Resources */ = {isa = PBXBuildFile; fileRef = A9334B2F2950767F0058EB99 /* Lottie-loader.json */; };
+		A9334B3229519B600058EB99 /* ExportButton.png in Resources */ = {isa = PBXBuildFile; fileRef = A9334B3129519B600058EB99 /* ExportButton.png */; };
+		A9334B342951B0E30058EB99 /* ScanFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9334B332951B0E30058EB99 /* ScanFile.swift */; };
+		A9334B362951B1750058EB99 /* UploadTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9334B352951B1750058EB99 /* UploadTask.swift */; };
+		A9334B382951B1A00058EB99 /* UploadService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9334B372951B1A00058EB99 /* UploadService.swift */; };
 		A949C71D28E723C700836DEE /* Vector.png in Resources */ = {isa = PBXBuildFile; fileRef = A949C71C28E723C700836DEE /* Vector.png */; };
 		A949C7232921077F00836DEE /* SampleScan.png in Resources */ = {isa = PBXBuildFile; fileRef = A949C7222921077F00836DEE /* SampleScan.png */; };
 		A949C727292110C600836DEE /* ProfilePlaceholder.png in Resources */ = {isa = PBXBuildFile; fileRef = A949C726292110C600836DEE /* ProfilePlaceholder.png */; };
@@ -389,6 +393,10 @@
 		A9334AF1293A4A020058EB99 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		A9334AF329439C090058EB99 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		A9334B2F2950767F0058EB99 /* Lottie-loader.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "Lottie-loader.json"; sourceTree = "<group>"; };
+		A9334B3129519B600058EB99 /* ExportButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ExportButton.png; sourceTree = "<group>"; };
+		A9334B332951B0E30058EB99 /* ScanFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanFile.swift; sourceTree = "<group>"; };
+		A9334B352951B1750058EB99 /* UploadTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadTask.swift; sourceTree = "<group>"; };
+		A9334B372951B1A00058EB99 /* UploadService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadService.swift; sourceTree = "<group>"; };
 		A949C71C28E723C700836DEE /* Vector.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Vector.png; sourceTree = "<group>"; };
 		A949C7222921077F00836DEE /* SampleScan.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = SampleScan.png; sourceTree = "<group>"; };
 		A949C726292110C600836DEE /* ProfilePlaceholder.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ProfilePlaceholder.png; sourceTree = "<group>"; };
@@ -593,6 +601,7 @@
 				A949C7362922A49000836DEE /* LoginOptionsImage.png */,
 				A9E5B812292A922D00E1989D /* ProjectSmapleImage.png */,
 				A9E5B816292E816400E1989D /* BackButton.png */,
+				A9334B3129519B600058EB99 /* ExportButton.png */,
 				A9334B2F2950767F0058EB99 /* Lottie-loader.json */,
 				4EE016BF259BE464008CCE65 /* Main.storyboard */,
 				4EE016C1259BE464008CCE65 /* LaunchScreen.storyboard */,
@@ -608,6 +617,9 @@
 				A9E5B818292EA7EC00E1989D /* CreateNewProjectView.swift */,
 				A949C7382923DFCC00836DEE /* ProjectsListCollectionView.swift */,
 				A9DC971128D8EF4D00FD987B /* LandingController.swift */,
+				A9334B332951B0E30058EB99 /* ScanFile.swift */,
+				A9334B352951B1750058EB99 /* UploadTask.swift */,
+				A9334B372951B1A00058EB99 /* UploadService.swift */,
 			);
 			name = RTABMapApp;
 			sourceTree = "<group>";
@@ -931,6 +943,7 @@
 				A9DC971828E4242A00FD987B /* TWINN Logo 1.png in Resources */,
 				4EE016C4259BE464008CCE65 /* LaunchScreen.storyboard in Resources */,
 				4EE016C7259BE46F008CCE65 /* Assets.xcassets in Resources */,
+				A9334B3229519B600058EB99 /* ExportButton.png in Resources */,
 				A949C7292921110B00836DEE /* ProjectsButtonImage.png in Resources */,
 				A949C72D292119FB00836DEE /* ProjectsButtonImage1.png in Resources */,
 				A9334AF429439C090058EB99 /* GoogleService-Info.plist in Resources */,
@@ -972,9 +985,11 @@
 				4EFD0BAA259D501E00575D88 /* triangle.cpp in Sources */,
 				A9E5B819292EA7EC00E1989D /* CreateNewProjectView.swift in Sources */,
 				4EFD0B9D259D501E00575D88 /* segment_drawable.cpp in Sources */,
+				A9334B382951B1A00058EB99 /* UploadService.swift in Sources */,
 				4EE016B4259BE441008CCE65 /* SceneDelegate.swift in Sources */,
 				4EFD0BA2259D501E00575D88 /* texture.cpp in Sources */,
 				A949C7392923DFCC00836DEE /* ProjectsListCollectionView.swift in Sources */,
+				A9334B362951B1750058EB99 /* UploadTask.swift in Sources */,
 				4EFD0B9C259D501E00575D88 /* axis.cpp in Sources */,
 				4EFD0B9F259D501E00575D88 /* camera.cpp in Sources */,
 				4EFD0BAE259D501E00575D88 /* band.cpp in Sources */,
@@ -984,6 +999,7 @@
 				4EFD0F3A259D5D1500575D88 /* CameraMobile.cpp in Sources */,
 				A949C7332922888900836DEE /* LoginView.swift in Sources */,
 				4EFD0BA6259D501E00575D88 /* shaders.cpp in Sources */,
+				A9334B342951B0E30058EB99 /* ScanFile.swift in Sources */,
 				4EFD0B99259D501E00575D88 /* obj_loader.cpp in Sources */,
 				4EFD0BA7259D501E00575D88 /* transform.cpp in Sources */,
 				4EFD0BA0259D501E00575D88 /* gesture_camera.cpp in Sources */,
