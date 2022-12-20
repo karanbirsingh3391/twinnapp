@@ -526,38 +526,38 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         }
     }
     
-    func uploadScan(projectID: String, filePath: String){
+    func uploadScan(projectID: String, fileName: String, scanName: String){
 
-        
         if (isKeyPresentInUserDefaults(key: "access_token"))
         {
-            myCollectionViewArray.removeAll()
             self.addSpinner()
             
             let parameters: [String: Any] = [:]
             
-            APIHelper.shareInstance.uploadScan2()
+            //APIHelper.shareInstance.uploadScan3()
             
-//            APIHelper.shareInstance.uploadScan(endpoint: "/storage?file_location=/Projects/"+projectID+"/Scans", filePath: filePath, parameters: parameters, method: "POST") { responseString, error in
-//                //print(responseString)
-//                
-//                DispatchQueue.main.async {
-//                    self.removeSpinner()
-//                    
-//                    if(responseString == ""){
-//                        self.showToast(message: "Something went wrong.", font: UIFont.preferredFont(forTextStyle: .body))
-//                    }
-//                    else{
-//                        let dict = self.convertToDictionary(text: responseString)
-//                
-//                        print(self.myCollectionViewArray)
-//                        if(!self.myCollectionViewArray.isEmpty){
-//                            self.setupScanListView()
-//                        }
-//                        
-//                    }
-//                }
-//            }
+            APIHelper.shareInstance.uploadScan(endpoint: "/storage?file_location=/Projects/"+projectID+"/Scans", fileName: fileName, scanName: scanName, parameters: parameters, method: "POST") { responseString, error in
+                //print(responseString)
+                
+                DispatchQueue.main.async {
+                    self.removeSpinner()
+                    
+                    if(responseString == ""){
+                        self.showToast(message: "Something went wrong.", font: UIFont.preferredFont(forTextStyle: .body))
+                    }
+                    else{
+                        let dict = self.convertToDictionary(text: responseString)
+                        if let scans = dict?["data"] as? [[String: AnyObject]] {
+                            for scan in scans {
+                                print(scan["file_id"]!)
+                                print(scan["file_name"]!)
+                                print(scan["fileurl"]!)
+                            }
+                        }
+                        self.showToast(message: "Scan uploaded successfully", font: UIFont.preferredFont(forTextStyle: .body))
+                    }
+                }
+            }
         }
         else
         {
@@ -1268,7 +1268,14 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     @objc func exportButtonAction(sender: UIButton!){
         print("export button clicked")
         print(databases[sender.tag].path)
-        uploadScan(projectID: self.projectID, filePath: databases[sender.tag].path)
+        
+        //URL(fileURLWithPath: databases[sender.tag].path).lastPathComponent.components(separatedBy: ".")[0]
+        
+        let fileName = URL(fileURLWithPath: databases[sender.tag].path).lastPathComponent
+        let itemName = self.myCollectionViewArray[sender.tag]["name"] as? String
+        let scanName = itemName?.components(separatedBy: "-twinn-")[1]
+        
+        uploadScan(projectID: self.projectID, fileName: fileName, scanName: scanName!)
         
 //        let file = File(link: "https://file.io", data: databases[sender.tag].path);
 //        uploadService.start(file: file)
