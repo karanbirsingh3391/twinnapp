@@ -97,7 +97,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         self.view.addSubview(backButton)
         backButton.isHidden = true
         
-        projectTitle = UILabel(frame: CGRect(x: 140, y: 50, width: 400, height: 21))
+        projectTitle = UILabel(frame: CGRect(x: 140, y: 50, width: 500, height: 21))
         projectTitle.backgroundColor = .clear
         //projectTitle.center = CGPoint(x: 160, y: 285)
         //projectTitle.font = UIFont(name: projectTitle.font.fontName, size: 20)
@@ -992,10 +992,11 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         }
         cell.addSubview(cellOptionsButton)
         
-        let scanTitle = UILabel(frame: CGRect(x: 12, y: 16, width: 170, height: 15))
+        let scanTitle = UILabel(frame: CGRect(x: 12, y: 16, width: 155, height: 15))
         //projectTitle.font = UIFont(name: projectTitle.font.fontName, size: 20)
         scanTitle.backgroundColor = .clear
         scanTitle.textAlignment = .left
+        scanTitle.sizeToFit()
         scanTitle.font = UIFont.preferredFont(forTextStyle: .body)
         scanTitle.font.withSize(8)
         scanTitle.textColor = .gray
@@ -1065,7 +1066,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
 //            }
             scanTitle.text = itemName?.components(separatedBy: "-twinn-")[1]
             
-            let exportButton = UIButton(frame: CGRect(x: cell.frame.width-75, y: 13, width: 30, height: 30))
+            let exportButton = UIButton(frame: CGRect(x: cell.frame.width-40, y: cell.frame.height-40, width: 30, height: 30))
             exportButton.backgroundColor = .clear
             exportButton.imageView?.contentMode = .scaleAspectFit
             exportButton.setImage(UIImage(named: "ExportButton"), for: .normal)
