@@ -180,7 +180,7 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-        
+        self.navigationController?.navigationBar.isHidden = false
         self.toastLabel.isHidden = true
         session.delegate = self
         

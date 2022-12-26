@@ -33,9 +33,9 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     private let menuViewProjectsButton = UIButton()
     private let newScanButton = UIButton()
     private let profileButton = UIButton()
-    private var backButton: UIButton!
+    private var backButton = UIButton()
     private let helpButton = UIButton()
-    private var mySearchBar = UISearchBar()
+    private var mySearchBar: UISearchBar!
     private var myCollectionView:UICollectionView!
     //private var myCollectionViewArray = [String]()
     private var myCollectionViewArray: [[String: Any]] = []
@@ -54,6 +54,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         super.viewDidLoad()
         overrideUserInterfaceStyle = .light
         self.view.isUserInteractionEnabled = true
+        
         isScansCollectionViewType = false
         setupBaseElements()
         fetchProfile()
@@ -68,7 +69,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
+        self.navigationController?.navigationBar.isHidden = true
         if(isScansCollectionViewType){
             self.createCollectionView()
         }
@@ -88,10 +89,10 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
 
     func setupBaseElements(){
         
-        backButton = UIButton(frame: CGRect(x: 100, y: 50, width: 20, height: 20))
+        backButton.frame = CGRect(x: 100, y: 50, width: 20, height: 20)
         //backButton.setImage(UIImage(systemName: "arrowshape.left.fill"), for: .normal)
         backButton.setImage(UIImage(named: "BackButton"), for: .normal)
-        //backButton.setImage(UIImage(named: "BackButton"), for: .highlighted)
+        backButton.setImage(UIImage(named: "BackButton"), for: .highlighted)
         backButton.addTarget(self, action: #selector(backButtonAction), for: .touchUpInside)
         self.view.addSubview(backButton)
         backButton.isHidden = true
@@ -112,17 +113,20 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         projectTitle.isUserInteractionEnabled = true
         self.view.addSubview(projectTitle)
         
-        mySearchBar.frame = CGRect(x:screenWidth-320, y:36 , width:300, height: 44)
+        mySearchBar = UISearchBar(frame: CGRect(x:screenWidth-320, y:36 , width:300, height: 44))
+        //mySearchBar.frame = CGRect(x:screenWidth-320, y:36 , width:300, height: 44)
         mySearchBar.searchBarStyle = UISearchBar.Style.default
         mySearchBar.backgroundColor = .clear
         mySearchBar.placeholder = " Search"
-        mySearchBar.sizeToFit()
-        mySearchBar.isTranslucent = false
+        //mySearchBar.sizeToFit()
+        
+        //mySearchBar.isTranslucent = false
         mySearchBar.backgroundImage = UIImage()
         //mySearchBar.returnKeyType = .done
         mySearchBar.delegate = self
         //navigationItem.titleView = searchBar
         self.view.addSubview(mySearchBar)
+        //self.navigationItem.searchController?.searchBar
         
         menuView.frame = CGRect(x:0, y:0 , width:80, height: screenHeight)
         menuView.backgroundColor = .systemGray6
@@ -1230,6 +1234,8 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     }
     
     @objc func profileButtonAction(sender: UIButton!){
+        
+        NotificationCenter.default.post(name: NSNotification.Name("com.user.projectcell.tapped"), object: nil)
         myProfileView = ProfileView(frame: CGRect(x: screenWidth, y: 0, width: 400, height: screenHeight), screenWidth: screenWidth, screenHeight: screenHeight, withDictionary: self.myProfileDictionary)
         myProfileView.delegate = self
         self.view.addSubview(myProfileView)
