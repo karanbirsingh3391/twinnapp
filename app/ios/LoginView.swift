@@ -68,7 +68,7 @@ class LoginView: UIView, UITextFieldDelegate {
         //paragraphStyle.lineHeightMultiple = 0.83
         emailLabel.text = "Email"
         loginOptionsView.addSubview(emailLabel)
-        
+    
         let passwordLabel = UILabel(frame: CGRect(x: screenWidth-540, y: 416, width: 90, height: 21))
         passwordLabel.textAlignment = .left
         passwordLabel.font = UIFont.preferredFont(forTextStyle: .body)
@@ -93,6 +93,8 @@ class LoginView: UIView, UITextFieldDelegate {
         
         passwordTextField = UITextField(frame: CGRect(x: screenWidth-540, y: 440, width: 514, height: 40))
         passwordTextField.placeholder = "Enter text here"
+        passwordTextField.textContentType = .password
+        passwordTextField.isSecureTextEntry = true
         passwordTextField.font = UIFont.systemFont(ofSize: 15)
         passwordTextField.borderStyle = UITextField.BorderStyle.roundedRect
         passwordTextField.autocorrectionType = UITextAutocorrectionType.no

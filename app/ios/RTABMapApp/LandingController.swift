@@ -263,7 +263,11 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
             print(databases)
             var tempArray = [URL]()
             for path in databases{
-                let filteredPath:String = path.lastPathComponent.components(separatedBy: "-twinn-")[0]
+                var filteredPath:String = path.lastPathComponent.components(separatedBy: "-twinn-")[0]
+                if(filteredPath.contains("-scan-")){
+                    filteredPath = filteredPath.components(separatedBy: "-scan-")[1]
+                }
+                
                 if filteredPath == projectID {
                     tempArray.append(path)
                 }
@@ -526,18 +530,24 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
 
         if (isKeyPresentInUserDefaults(key: "access_token"))
         {
+           
+            print(filePath.lastPathComponent)
+            print(fileName)
+            
+
+            
             self.addSpinner()
-            
+
             let parameters: [String: Any] = [:]
-            
+
             //APIHelper.shareInstance.uploadScan3()
-            
+
             APIHelper.shareInstance.uploadScan(endpoint: "/storage?file_location=/Projects/"+projectID+"/Scans", fileName: fileName, filePath: filePath, scanName: scanName, parameters: parameters, method: "POST") { responseString, error in
                 //print(responseString)
-                
+
                 DispatchQueue.main.async {
                     self.removeSpinner()
-                    
+
                     if(responseString == ""){
                         self.showToast(message: "Something went wrong.", font: UIFont.preferredFont(forTextStyle: .body))
                     }
@@ -548,9 +558,23 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                                 print(scan["file_id"]!)
                                 print(scan["file_name"]!)
                                 print(scan["fileurl"]!)
+                                
+                                do{
+                                    let originPath = self.getDocumentDirectory().appendingPathComponent(fileName, conformingTo: .text)
+                                    let destinationPath = self.getDocumentDirectory().appendingPathComponent((scan["file_id"]! as! String)+"-scan-"+fileName, conformingTo: .text)
+                                    try FileManager.default.moveItem(at: originPath, to: destinationPath)
+                                } catch {
+                                    print(error)
+                                }
+
                             }
                         }
                         self.showToast(message: "Scan uploaded successfully", font: UIFont.preferredFont(forTextStyle: .body))
+                        
+                        self.myCollectionView.removeFromSuperview()
+                        self.updateDatabases(projectID: self.projectID)
+                        self.setupScanListView()
+
                     }
                 }
             }
@@ -1066,16 +1090,24 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
 //            }
             scanTitle.text = itemName?.components(separatedBy: "-twinn-")[1]
             
-            let exportButton = UIButton(frame: CGRect(x: cell.frame.width-40, y: cell.frame.height-40, width: 30, height: 30))
-            exportButton.backgroundColor = .clear
-            exportButton.imageView?.contentMode = .scaleAspectFit
-            exportButton.setImage(UIImage(named: "ExportButton"), for: .normal)
-            exportButton.setImage(UIImage(named: "ExportButton"), for: .highlighted)
-            exportButton.addTarget(self, action: #selector(exportButtonAction), for: .touchUpInside)
-            exportButton.addInteraction(interaction)
-            exportButton.tag = indexPath.row
-            exportButton.showsMenuAsPrimaryAction = true
-            cell.addSubview(exportButton)
+            var scanPath:String = (itemName?.components(separatedBy: "-twinn-")[0])!
+            if(!scanPath.contains("-scan-")){
+                //scanPath = scanPath.components(separatedBy: "-scan-")[1]
+                
+                let exportButton = UIButton(frame: CGRect(x: cell.frame.width-40, y: cell.frame.height-40, width: 30, height: 30))
+                exportButton.backgroundColor = .clear
+                exportButton.imageView?.contentMode = .scaleAspectFit
+                exportButton.setImage(UIImage(named: "ExportButton"), for: .normal)
+                exportButton.setImage(UIImage(named: "ExportButton"), for: .highlighted)
+                exportButton.addTarget(self, action: #selector(exportButtonAction), for: .touchUpInside)
+                exportButton.addInteraction(interaction)
+                exportButton.tag = indexPath.row
+                exportButton.showsMenuAsPrimaryAction = true
+                cell.addSubview(exportButton)
+            }
+            
+            
+            
         }
         else
         {
@@ -1199,15 +1231,20 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     @objc func backButtonAction(sender: UIButton!){
         NotificationCenter.default.post(name: NSNotification.Name("com.user.projectcell.tapped"), object: nil)
         isScansCollectionViewType = false
-        
-        if self.myCollectionView.isDescendant(of: self.view) {
-            self.myCollectionView.removeFromSuperview()
-        } else {
-            //Do nothing
+        if self.myCollectionView != nil {
+            if self.view.subviews.contains(self.myCollectionView){
+                self.myCollectionView.removeFromSuperview()
+            }
         }
         self.myCollectionViewArray.removeAll()
         self.fetchProjectsData()
         self.labelsSwitchToProjectsView()
+        
+//        if self.myCollectionView.isDescendant(of: self.view) {
+//            self.myCollectionView.removeFromSuperview()
+//        } else {
+//            //Do nothing
+//        }
         
 //        UIView.animate(withDuration: 1.0, delay: 0.0, options: [], animations: {
 //            self.myCollectionView.removeFromSuperview()
@@ -1221,11 +1258,10 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     @objc func projectsButtonAction(sender: UIButton!){
         NotificationCenter.default.post(name: NSNotification.Name("com.user.projectcell.tapped"), object: nil)
         isScansCollectionViewType = false
-        
-        if self.myCollectionView.isDescendant(of: self.view) {
-            self.myCollectionView.removeFromSuperview()
-        } else {
-            //Do nothing
+        if self.myCollectionView != nil {
+            if self.view.subviews.contains(self.myCollectionView){
+                self.myCollectionView.removeFromSuperview()
+            }
         }
         self.myCollectionViewArray.removeAll()
         self.fetchProjectsData()
@@ -1269,7 +1305,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         //URL(fileURLWithPath: databases[sender.tag].path).lastPathComponent.components(separatedBy: ".")[0]
         
         let fileName = URL(fileURLWithPath: databases[sender.tag].path).lastPathComponent
-        let filePath = URL(fileURLWithPath: databases[sender.tag].path)
+        var filePath = URL(fileURLWithPath: databases[sender.tag].path)
         let itemName = self.myCollectionViewArray[sender.tag]["name"] as? String
         let scanName = itemName?.components(separatedBy: "-twinn-")[1]
         

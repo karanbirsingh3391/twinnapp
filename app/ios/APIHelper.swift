@@ -215,7 +215,7 @@ final public class APIHelper: NSObject {
         
         let config = URLSessionConfiguration.default
         config.waitsForConnectivity = true
-        config.timeoutIntervalForResource = 2
+        config.timeoutIntervalForResource = 60
         
         var appendedFilePath = "file://\(fileName)"
         
