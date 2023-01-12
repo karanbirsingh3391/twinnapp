@@ -233,9 +233,9 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         self.view.addSubview(createNewProjectView)
         //self.view.bringSubviewToFront(newScanButton)
         
+        
         UIView.animate(withDuration: 0.3, delay: 0.0, options: [], animations: {
             self.createNewProjectView.frame = CGRect(x: self.screenWidth-400, y: 0, width: 400, height: self.screenHeight)
-
         }, completion: { (finished: Bool) in
             self.fetchClientsList()
         })
@@ -275,7 +275,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                 if(databases.count > 0)
                 {
                     for i in 0...databases.count-1 {
-                        myCollectionViewArray.insert(["name": URL(fileURLWithPath: databases[i].path).lastPathComponent.components(separatedBy: ".")[0], "clientName":"","image": "ProjectSmapleImage.png", "dateCreated":(try! URL(fileURLWithPath: databases[i].path).resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate!.getFormattedDate(format: "dd/MM/yyyy")), "status": "In Progress", "image2": databases[i].path], at: i)
+                        myCollectionViewArray.insert(["name": URL(fileURLWithPath: databases[i].path).lastPathComponent.components(separatedBy: ".")[0], "clientName":"","image": "ProjectSmapleImage.png", "dateCreated":(try! URL(fileURLWithPath: databases[i].path).resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate!.getFormattedDate(format: "yyyy-MM-dd")), "status": "In Progress", "image2": databases[i].path], at: i)
                     }
                 
                 }
@@ -452,6 +452,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                                         UserDefaults.standard.setValue(project["clientId"]!, forKey: "clientId")
                                     }
                                 }
+                            
                             self.myOriginalArray = self.myCollectionViewArray
                         }
                         
@@ -992,17 +993,16 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
         }
         cell.addSubview(cellOptionsButton)
         
-        let scanTitle = UILabel(frame: CGRect(x: 12, y: 16, width: 155, height: 15))
+        let scanTitle = UILabel(frame: CGRect(x: 12, y: 16, width: 155, height: 20))
         //projectTitle.font = UIFont(name: projectTitle.font.fontName, size: 20)
         scanTitle.backgroundColor = .clear
         scanTitle.textAlignment = .left
-        scanTitle.sizeToFit()
+        //scanTitle.sizeToFit()
         scanTitle.font = UIFont.preferredFont(forTextStyle: .body)
-        scanTitle.font.withSize(8)
+        scanTitle.font.withSize(10)
         scanTitle.textColor = .gray
         //scanTitle.text = "Scan "+String(indexPath.row+1)
         let itemName = self.myCollectionViewArray[indexPath.row]["name"] as? String
-        
         cell.addSubview(scanTitle)
         
         //let imageName = "SampleScan.png"
@@ -1150,8 +1150,7 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
                     .underlined("Projects")
                     .normal(" | ")
                     .bold(projectName!)
-            //let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
-            //projectTitle.addGestureRecognizer(tapGesture)
+            
                 
             self.myCollectionView.removeFromSuperview()
             //myCollectionViewArray.removeAll()
@@ -1181,7 +1180,6 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     
     // MARK: - Button Actions
     @objc func newScanButtonAction(sender: UIButton!){
-        print("button Pressed")
         if(isScansCollectionViewType)
         {
             let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
@@ -1199,39 +1197,39 @@ class LandingController: UIViewController, UICollectionViewDataSource, UICollect
     }
     
     @objc func backButtonAction(sender: UIButton!){
-        print("back button clicked")
         NotificationCenter.default.post(name: NSNotification.Name("com.user.projectcell.tapped"), object: nil)
         isScansCollectionViewType = false
-        UIView.animate(withDuration: 1.0, delay: 0.0, options: [], animations: {
+        
+        if self.myCollectionView.isDescendant(of: self.view) {
             self.myCollectionView.removeFromSuperview()
-            self.myCollectionViewArray.removeAll()
-        }, completion: { (finished: Bool) in
-            self.fetchProjectsData()
-            self.labelsSwitchToProjectsView()
-        })
+        } else {
+            //Do nothing
+        }
+        self.myCollectionViewArray.removeAll()
+        self.fetchProjectsData()
+        self.labelsSwitchToProjectsView()
+        
+//        UIView.animate(withDuration: 1.0, delay: 0.0, options: [], animations: {
+//            self.myCollectionView.removeFromSuperview()
+//            self.myCollectionViewArray.removeAll()
+//        }, completion: { (finished: Bool) in
+//            self.fetchProjectsData()
+//            self.labelsSwitchToProjectsView()
+//        })
     }
     
     @objc func projectsButtonAction(sender: UIButton!){
         NotificationCenter.default.post(name: NSNotification.Name("com.user.projectcell.tapped"), object: nil)
         isScansCollectionViewType = false
-        UIView.animate(withDuration: 1.0, delay: 0.0, options: [], animations: {
+        
+        if self.myCollectionView.isDescendant(of: self.view) {
             self.myCollectionView.removeFromSuperview()
-            self.myCollectionViewArray.removeAll()
-        }, completion: { (finished: Bool) in
-            self.fetchProjectsData()
-            self.labelsSwitchToProjectsView()
-        })
-    }
-    
-    @objc func handleTap(_ gestureRecognize: UITapGestureRecognizer) {
-        isScansCollectionViewType = false
-        UIView.animate(withDuration: 1.0, delay: 0.0, options: [], animations: {
-            self.myCollectionViewArray.removeAll()
-            self.myCollectionView.removeFromSuperview()
-        }, completion: { (finished: Bool) in
-            self.fetchProjectsData()
-            self.labelsSwitchToProjectsView()
-        })
+        } else {
+            //Do nothing
+        }
+        self.myCollectionViewArray.removeAll()
+        self.fetchProjectsData()
+        self.labelsSwitchToProjectsView()
     }
     
     @objc func profileButtonAction(sender: UIButton!){

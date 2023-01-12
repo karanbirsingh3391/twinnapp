@@ -347,14 +347,14 @@ class CreateNewProjectView: UIView, UITextFieldDelegate, UITableViewDelegate, UI
         addClientButton.addSubview(spinnerView)
         spinnerView.startAnimating()
         addClientButton.setTitle("", for: .normal)
-        self.isUserInteractionEnabled = false
+        //self.isUserInteractionEnabled = false
     }
     
     func removeSpinner(){
         self.spinnerView.stopAnimating()
         self.spinnerView.removeFromSuperview()
         addClientButton.setTitle("+", for: .normal)
-        self.isUserInteractionEnabled = true
+        //self.isUserInteractionEnabled = true
     }
     
 }

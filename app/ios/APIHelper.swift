@@ -53,9 +53,9 @@ final public class APIHelper: NSObject {
         request.httpMethod = method
         request.httpBody = parameters.percentEncoded()
         
-        print("\(request.httpMethod!) \(request.url!)")
-        print(request.allHTTPHeaderFields!)
-        print(String(data: request.httpBody ?? Data(), encoding: .utf8)!)
+//        print("\(request.httpMethod!) \(request.url!)")
+//        print(request.allHTTPHeaderFields!)
+//        print(String(data: request.httpBody ?? Data(), encoding: .utf8)!)
         
         let config = URLSessionConfiguration.default
         config.waitsForConnectivity = true
@@ -120,10 +120,10 @@ final public class APIHelper: NSObject {
         
         //request.httpBody = try! JSONSerialization.data(withJSONObject: parameters)
 
-        print(request.httpMethod!)
-        print(request.url!)
-        print(request.allHTTPHeaderFields!)
-        print(String(data: request.httpBody ?? Data(), encoding: .utf8)!)
+//        print(request.httpMethod!)
+//        print(request.url!)
+//        print(request.allHTTPHeaderFields!)
+//        print(String(data: request.httpBody ?? Data(), encoding: .utf8)!)
         
         //print(request.allHTTPHeaderFields)
         let config = URLSessionConfiguration.default
